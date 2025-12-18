@@ -36,7 +36,7 @@ const Movimientos = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [dateFilter, setDateFilter] = useState('');
-  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards');
 
   // Actualizar título del header
   useEffect(() => {
@@ -60,7 +60,7 @@ const Movimientos = () => {
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="bg-green-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
           <div className="flex justify-between items-start mb-2">
             <p className="text-xs font-medium text-white/90 uppercase tracking-wide">Entradas Hoy</p>
@@ -100,67 +100,74 @@ const Movimientos = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-card rounded-xl shadow-sm p-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Buscar por producto..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
-            />
+      <div className="bg-card rounded-xl shadow-sm p-3 sm:p-4">
+        <div className="flex flex-col gap-3 sm:gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Buscar por producto..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
+              />
+            </div>
+            <div className="flex gap-3 sm:gap-4">
+              <select
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                className="select-category flex-1 sm:flex-none"
+              >
+                <option value="all">Todos los tipos</option>
+                <option value="entrada">Entradas</option>
+                <option value="salida">Salidas</option>
+                <option value="ajuste">Ajustes</option>
+                <option value="merma">Mermas</option>
+              </select>
+              <div className="relative flex-1 sm:flex-none">
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="pl-9 pr-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background w-full"
+                />
+              </div>
+            </div>
           </div>
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="select-category"
-          >
-            <option value="all">Todos los tipos</option>
-            <option value="entrada">Entradas</option>
-            <option value="salida">Salidas</option>
-            <option value="ajuste">Ajustes</option>
-            <option value="merma">Mermas</option>
-          </select>
-          <div className="relative">
-            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-            <input
-              type="date"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="pl-9 pr-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background w-full"
-            />
-          </div>
-          <div className="flex gap-2 border border-border rounded-lg overflow-hidden">
+          <div className="flex gap-3">
+            <div className="hidden sm:flex gap-2 border border-border rounded-lg overflow-hidden">
+              <button
+                onClick={() => setViewMode('table')}
+                className={`px-4 py-2 text-sm transition-colors flex items-center gap-1 ${
+                  viewMode === 'table'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-background text-foreground hover:bg-secondary'
+                }`}
+              >
+                <Table2 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('cards')}
+                className={`px-4 py-2 text-sm transition-colors flex items-center gap-1 ${
+                  viewMode === 'cards'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-background text-foreground hover:bg-secondary'
+                }`}
+              >
+                <Grid3x3 className="w-4 h-4" />
+              </button>
+            </div>
             <button
-              onClick={() => setViewMode('table')}
-              className={`px-4 py-2 text-sm transition-colors flex items-center gap-1 ${
-                viewMode === 'table'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-background text-foreground hover:bg-secondary'
-              }`}
+              type="button"
+              className="button flex-1 sm:flex-none sm:ml-auto"
             >
-              <Table2 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('cards')}
-              className={`px-4 py-2 text-sm transition-colors flex items-center gap-1 ${
-                viewMode === 'cards'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-background text-foreground hover:bg-secondary'
-              }`}
-            >
-              <Grid3x3 className="w-4 h-4" />
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Nuevo Movimiento</span>
+              <span className="sm:hidden">Nuevo</span>
             </button>
           </div>
-          <button
-            type="button"
-            className="button"
-          >
-            <Plus className="w-4 h-4" />
-            Nuevo Movimiento
-          </button>
         </div>
       </div>
 

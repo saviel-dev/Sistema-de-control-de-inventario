@@ -1,4 +1,4 @@
-import { ClipboardList, Search, Plus, Edit, Trash2, Folder, ChevronRight, X, Table2, Grid3x3, Save, List } from 'lucide-react';
+import { ClipboardList, Search, Plus, Edit, Trash2, Folder, ChevronRight, X, Table2, Grid3x3, Save, List, Package, MoreVertical, Eye } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface Product {
@@ -10,6 +10,7 @@ interface Product {
   minStock: number;
   price: number;
   status: 'available' | 'low' | 'medium' | 'out';
+  image?: string;
 }
 
 interface Location {
@@ -34,21 +35,22 @@ const InventarioDetallado = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [locationSearchTerm, setLocationSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards');
   const [locationViewMode, setLocationViewMode] = useState<'list' | 'cards'>('cards');
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [isAddingLocation, setIsAddingLocation] = useState(false);
   const [locationFormData, setLocationFormData] = useState({ name: '' });
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [products, setProducts] = useState<Record<string, Product[]>>({
     'duarte-burguer': [
-      { id: '#001', name: 'Queso Cheddar', category: 'Ingredientes', stock: 45.0, unit: 'Kg', minStock: 10, price: 120, status: 'available' },
-      { id: '#002', name: 'Salsa de Tomate', category: 'Salsas', stock: 2.5, unit: 'Litros', minStock: 5, price: 35, status: 'low' },
+      { id: '#001', name: 'Queso Cheddar', category: 'Ingredientes', stock: 45.0, unit: 'Kg', minStock: 10, price: 120, status: 'available', image: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=400&h=300&fit=crop' },
+      { id: '#002', name: 'Salsa de Tomate', category: 'Salsas', stock: 2.5, unit: 'Litros', minStock: 5, price: 35, status: 'low', image: 'https://images.unsplash.com/photo-1587486937554-68b1a45842f6?w=400&h=300&fit=crop' },
     ],
     'bodega-san-antonio': [
-      { id: '#003', name: 'Coca Cola 355ml', category: 'Bebidas', stock: 120, unit: 'Unidades', minStock: 50, price: 15, status: 'available' },
+      { id: '#003', name: 'Coca Cola 355ml', category: 'Bebidas', stock: 120, unit: 'Unidades', minStock: 50, price: 15, status: 'available', image: 'https://images.unsplash.com/photo-1554866585-cd94860890b7?w=400&h=300&fit=crop' },
     ],
     'kiosko-will': [
-      { id: '#004', name: 'Pan de Hamburguesa', category: 'Panadería', stock: 50, unit: 'Paquetes', minStock: 30, price: 45, status: 'medium' },
+      { id: '#004', name: 'Pan de Hamburguesa', category: 'Panadería', stock: 50, unit: 'Paquetes', minStock: 30, price: 45, status: 'medium', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=300&fit=crop' },
     ],
   });
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -200,26 +202,26 @@ const InventarioDetallado = () => {
     return (
       <div className="space-y-6">
         {/* Header con botón de volver */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <button
               onClick={() => setSelectedLocation(null)}
-              className="p-2 hover:bg-secondary rounded-lg transition-colors"
+              className="p-2 hover:bg-secondary rounded-lg transition-colors flex-shrink-0"
             >
               <ChevronRight className="w-5 h-5 rotate-180" />
             </button>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                <ClipboardList className="w-7 h-7 text-primary" />
-                {locations.find(l => l.id === selectedLocation)?.name}
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+                <ClipboardList className="w-6 h-6 sm:w-7 sm:h-7 text-primary flex-shrink-0" />
+                <span className="truncate">{locations.find(l => l.id === selectedLocation)?.name}</span>
               </h1>
-              <p className="text-muted-foreground text-sm mt-1">Gestión de inventario</p>
+              <p className="text-muted-foreground text-xs sm:text-sm mt-1">Gestión de inventario</p>
             </div>
           </div>
           <button
             onClick={() => setIsAddingProduct(true)}
             type="button"
-            className="button"
+            className="button w-full sm:w-auto sm:self-end"
           >
             <Plus className="w-4 h-4" />
             Agregar Producto
@@ -227,8 +229,8 @@ const InventarioDetallado = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-card rounded-xl shadow-sm p-4">
-          <div className="flex flex-col md:flex-row gap-4">
+        <div className="bg-card rounded-xl shadow-sm p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
@@ -239,46 +241,48 @@ const InventarioDetallado = () => {
                 className="w-full pl-9 pr-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
               />
             </div>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="select-category"
-            >
-              <option value="all">Todas las categorías</option>
-              {categories.filter(c => c !== 'all').map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-            <div className="flex gap-2 border border-border rounded-lg overflow-hidden">
-              <button
-                onClick={() => setViewMode('table')}
-                className={`px-4 py-2 text-sm transition-colors flex items-center gap-1 ${
-                  viewMode === 'table'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-background text-foreground hover:bg-secondary'
-                }`}
+            <div className="flex gap-3 sm:gap-4">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="select-category flex-1 sm:flex-none"
               >
-                <Table2 className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('cards')}
-                className={`px-4 py-2 text-sm transition-colors flex items-center gap-1 ${
-                  viewMode === 'cards'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-background text-foreground hover:bg-secondary'
-                }`}
-              >
-                <Grid3x3 className="w-4 h-4" />
-              </button>
+                <option value="all">Todas las categorías</option>
+                {categories.filter(c => c !== 'all').map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+              <div className="hidden sm:flex gap-2 border border-border rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setViewMode('table')}
+                  className={`px-4 py-2 text-sm transition-colors flex items-center gap-1 ${
+                    viewMode === 'table'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-background text-foreground hover:bg-secondary'
+                  }`}
+                >
+                  <Table2 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('cards')}
+                  className={`px-4 py-2 text-sm transition-colors flex items-center gap-1 ${
+                    viewMode === 'cards'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-background text-foreground hover:bg-secondary'
+                  }`}
+                >
+                  <Grid3x3 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Form Modal para Agregar/Editar */}
         {(isAddingProduct || editingProduct) && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-foreground/60 backdrop-blur-sm" onClick={handleCloseForm} />
-            <div className="relative bg-card rounded-xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="relative bg-card rounded-xl shadow-2xl p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-foreground">
                   {editingProduct ? 'Editar Producto' : 'Agregar Producto'}
@@ -438,54 +442,115 @@ const InventarioDetallado = () => {
             )}
           </div>
         ) : (
-          <div className="bg-card rounded-xl shadow-sm p-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="bg-card rounded-xl shadow-sm p-3 sm:p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {filteredProducts.map((product) => (
-                <div key={product.id} className="border border-border rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <p className="text-xs text-muted-foreground font-medium">{product.id}</p>
-                      <h3 className="text-lg font-semibold text-foreground mt-1">{product.name}</h3>
-                    </div>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => handleEditProduct(product)}
-                        className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors"
+                <div 
+                  key={product.id} 
+                  className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 group"
+                >
+                  {/* Product Image */}
+                  <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                    {product.image ? (
+                      <img 
+                        src={product.image} 
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Package className="w-16 h-16 text-gray-400" />
+                      </div>
+                    )}
+                    {/* Actions Menu */}
+                    <div className="absolute top-3 right-3">
+                      <button 
+                        onClick={() => setOpenDropdown(openDropdown === product.id ? null : product.id)}
+                        className="p-2 bg-white/90 backdrop-blur-sm rounded-lg text-foreground hover:bg-white transition-colors shadow-md"
                       >
-                        <Edit className="w-4 h-4" />
+                        <MoreVertical className="w-4 h-4" />
                       </button>
-                      <button
-                        onClick={() => handleDeleteProduct(product.id)}
-                        className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      
+                      {/* Dropdown Menu */}
+                      {openDropdown === product.id && (
+                        <>
+                          <div 
+                            className="fixed inset-0 z-10" 
+                            onClick={() => setOpenDropdown(null)}
+                          />
+                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-border z-20 overflow-hidden">
+                            <button
+                              onClick={() => {
+                                console.log('Ver detalles:', product.id);
+                                setOpenDropdown(null);
+                              }}
+                              className="w-full px-4 py-2.5 text-left text-sm hover:bg-secondary transition-colors flex items-center gap-3"
+                            >
+                              <Eye className="w-4 h-4 text-blue-500" />
+                              <span>Ver detalles</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                handleEditProduct(product);
+                                setOpenDropdown(null);
+                              }}
+                              className="w-full px-4 py-2.5 text-left text-sm hover:bg-secondary transition-colors flex items-center gap-3"
+                            >
+                              <Edit className="w-4 h-4 text-green-500" />
+                              <span>Editar</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                handleDeleteProduct(product.id);
+                                setOpenDropdown(null);
+                              }}
+                              className="w-full px-4 py-2.5 text-left text-sm hover:bg-destructive/10 text-destructive transition-colors flex items-center gap-3 border-t border-border"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              <span>Eliminar</span>
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Categoría</span>
-                      <span className="px-2 py-1 bg-secondary rounded text-xs">{product.category}</span>
+
+                  {/* Card Content */}
+                  <div className="p-4">
+                    {/* Header */}
+                    <div className="mb-3">
+                      <p className="text-xs text-muted-foreground font-medium">{product.id}</p>
+                      <h3 className="text-lg font-semibold text-foreground mt-1 line-clamp-1">{product.name}</h3>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Stock</span>
-                      <span className={`text-sm font-bold ${product.status === 'low' || product.status === 'out' ? 'text-destructive' : 'text-foreground'}`}>
-                        {product.stock} {product.unit}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Min. Stock</span>
-                      <span className="text-sm text-foreground">{product.minStock} {product.unit}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Precio</span>
-                      <span className="text-sm font-semibold text-foreground">${product.price}</span>
-                    </div>
-                    <div className="flex items-center justify-between pt-2 border-t border-border">
-                      <span className="text-xs text-muted-foreground">Estado</span>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusConfig[product.status].className}`}>
-                        {statusConfig[product.status].label}
-                      </span>
+
+                    {/* Details */}
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Categoría</span>
+                        <span className="text-sm font-medium text-foreground">{product.category}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Stock</span>
+                        <span className={`text-sm font-bold ${product.status === 'low' || product.status === 'out' ? 'text-destructive' : 'text-foreground'}`}>
+                          {product.stock} {product.unit}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Min. Stock</span>
+                        <span className="text-sm text-foreground">{product.minStock} {product.unit}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Precio</span>
+                        <span className="text-sm font-semibold text-foreground">${product.price}</span>
+                      </div>
+                      
+                      {/* Status Badge */}
+                      <div className="flex items-center justify-between pt-3 border-t border-border">
+                        <span className="text-sm text-muted-foreground">Estado</span>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusConfig[product.status].className}`}>
+                          {statusConfig[product.status].label}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -505,44 +570,46 @@ const InventarioDetallado = () => {
   return (
     <div className="space-y-6">
       {/* Filters y botón agregar */}
-      <div className="bg-card rounded-xl shadow-sm p-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Buscar negocio..."
-              value={locationSearchTerm}
-              onChange={(e) => setLocationSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
-            />
-          </div>
-          <div className="flex gap-2 border border-border rounded-lg overflow-hidden">
-            <button
-              onClick={() => setLocationViewMode('list')}
-              className={`px-4 py-2 text-sm transition-colors flex items-center gap-1 ${
-                locationViewMode === 'list'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-background text-foreground hover:bg-secondary'
-              }`}
-            >
-              <List className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setLocationViewMode('cards')}
-              className={`px-4 py-2 text-sm transition-colors flex items-center gap-1 ${
-                locationViewMode === 'cards'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-background text-foreground hover:bg-secondary'
-              }`}
-            >
-              <Grid3x3 className="w-4 h-4" />
-            </button>
+      <div className="bg-card rounded-xl shadow-sm p-3 sm:p-4">
+        <div className="flex flex-col gap-3 sm:gap-4">
+          <div className="flex gap-3 sm:gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Buscar negocio..."
+                value={locationSearchTerm}
+                onChange={(e) => setLocationSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
+              />
+            </div>
+            <div className="hidden sm:flex gap-2 border border-border rounded-lg overflow-hidden">
+              <button
+                onClick={() => setLocationViewMode('list')}
+                className={`px-4 py-2 text-sm transition-colors flex items-center gap-1 ${
+                  locationViewMode === 'list'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-background text-foreground hover:bg-secondary'
+                }`}
+              >
+                <List className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setLocationViewMode('cards')}
+                className={`px-4 py-2 text-sm transition-colors flex items-center gap-1 ${
+                  locationViewMode === 'cards'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-background text-foreground hover:bg-secondary'
+                }`}
+              >
+                <Grid3x3 className="w-4 h-4" />
+              </button>
+            </div>
           </div>
           <button
             onClick={() => setIsAddingLocation(true)}
             type="button"
-            className="button"
+            className="button w-full sm:w-auto"
           >
             <Plus className="w-4 h-4" />
             Agregar Negocio
@@ -594,7 +661,7 @@ const InventarioDetallado = () => {
 
       {/* Location View */}
       {locationViewMode === 'cards' ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredLocations.map((location) => (
             <div
               key={location.id}

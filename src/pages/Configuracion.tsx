@@ -26,24 +26,24 @@ const Configuracion = () => {
         <p className="text-muted-foreground text-sm mt-1">Administra las preferencias del sistema</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
         {/* Sidebar Tabs */}
-        <div className="bg-card rounded-xl shadow-sm p-4">
-          <nav className="space-y-1">
+        <div className="bg-card rounded-xl shadow-sm p-3 sm:p-4">
+          <nav className="flex lg:flex-col overflow-x-auto lg:overflow-x-visible gap-1 lg:space-y-1">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
                     activeTab === tab.id
                       ? 'bg-primary/10 text-primary'
                       : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
-                  {tab.label}
+                  <span className="hidden sm:inline">{tab.label}</span>
                 </button>
               );
             })}
@@ -51,7 +51,7 @@ const Configuracion = () => {
         </div>
 
         {/* Content */}
-        <div className="lg:col-span-3 bg-card rounded-xl shadow-sm p-6">
+        <div className="lg:col-span-3 bg-card rounded-xl shadow-sm p-4 sm:p-6">
           {activeTab === 'general' && (
             <div className="bg-card rounded-xl shadow-sm overflow-hidden">
               <div className="bg-[#222] p-4 border-b border-border">

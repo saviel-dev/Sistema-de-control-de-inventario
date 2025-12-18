@@ -34,7 +34,7 @@ const statusConfig = {
 const InventarioGeneral = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards');
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const categories = ['all', ...new Set(products.map(p => p.category))];

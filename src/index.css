@@ -117,7 +117,8 @@
 }
 
 @layer utilities {
-  .theme-transition, .theme-transition * {
+  .theme-transition,
+  .theme-transition * {
     @apply transition-colors duration-300;
   }
 
@@ -137,8 +138,8 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    border: 1px solid #E9762B;
-    background-color: #E9762B;
+    border: 1px solid #e9762b;
+    background-color: #e9762b;
     border-radius: 5px;
     color: #fff;
     font-weight: 600;
@@ -210,5 +211,53 @@
     background-color: #fff;
     color: #1f2937;
     padding: 0.5rem;
+  }
+
+  /* Responsive table utilities */
+  .table-responsive {
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+  }
+
+  .table-responsive::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 30px;
+    background: linear-gradient(to left, rgba(255, 255, 255, 0.8), transparent);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  @media (max-width: 768px) {
+    .table-responsive::after {
+      opacity: 1;
+    }
+  }
+
+  /* Mobile stack utility */
+  @media (max-width: 640px) {
+    .mobile-stack {
+      flex-direction: column !important;
+      align-items: stretch !important;
+    }
+
+    .mobile-stack > * {
+      width: 100% !important;
+    }
+  }
+
+  /* Touch-friendly tap targets */
+  @media (hover: none) and (pointer: coarse) {
+    button,
+    a,
+    input[type="checkbox"],
+    input[type="radio"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
   }
 }
