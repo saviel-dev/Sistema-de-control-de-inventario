@@ -1,6 +1,8 @@
 import { Menu, Bell, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import NotificationPanel from './NotificationPanel';
 
 interface HeaderProps {
   title: string;
@@ -10,6 +12,7 @@ interface HeaderProps {
 const Header = ({ title, onMenuClick }: HeaderProps) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   const currentDate = new Date().toLocaleDateString('es-ES', {
     weekday: 'long',
@@ -35,16 +38,31 @@ const Header = ({ title, onMenuClick }: HeaderProps) => {
         <div className="hidden sm:block text-right">
           <p className="text-xs text-muted-foreground capitalize">{currentDate}</p>
         </div>
-        <button className="relative p-2 text-muted-foreground hover:text-primary transition-colors">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"></span>
-        </button>
+        
+        {/* Notifications Button */}
+        <div className="relative">
+          <button 
+            onClick={() => setNotificationsOpen(!notificationsOpen)}
+            className="relative p-2 text-muted-foreground hover:text-primary transition-colors"
+          >
+            <Bell className="w-5 h-5" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"></span>
+          </button>
+          
+          <NotificationPanel 
+            isOpen={notificationsOpen} 
+            onClose={() => setNotificationsOpen(false)} 
+          />
+        </div>
+
+        {/* Logout Button */}
         <button 
           onClick={handleLogout}
-          className="p-2 text-muted-foreground hover:text-destructive transition-colors"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-white hover:bg-destructive transition-all duration-200"
           title="Cerrar sesión"
         >
-          <LogOut className="w-5 h-5" />
+          <LogOut className="w-4 h-4" />
+          <span className="hidden md:inline">Cerrar Sesión</span>
         </button>
       </div>
     </header>

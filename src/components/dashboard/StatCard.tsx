@@ -1,4 +1,5 @@
 import { LucideIcon } from 'lucide-react';
+import { ReactNode } from 'react';
 
 interface StatCardProps {
   title: string;
@@ -9,9 +10,10 @@ interface StatCardProps {
     positive: boolean;
   };
   status?: string;
-  borderColor: string;
+  secondaryValue?: string;
+  bgColor: string;
   iconBgColor: string;
-  iconColor: string;
+  action?: ReactNode;
 }
 
 const StatCard = ({
@@ -20,29 +22,40 @@ const StatCard = ({
   icon: Icon,
   trend,
   status,
-  borderColor,
+  secondaryValue,
+  bgColor,
   iconBgColor,
-  iconColor,
+  action,
 }: StatCardProps) => {
   return (
-    <div className={`bg-card p-6 rounded-xl shadow-sm border-l-4 ${borderColor} hover:shadow-md transition-shadow`}>
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{title}</p>
-          <h3 className="text-2xl font-bold text-foreground mt-1">{value}</h3>
+    <div className={`${bgColor} relative overflow-hidden p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white`}>
+      {/* Background Icon */}
+      <div className="absolute -right-6 -bottom-6 text-white/10 pointer-events-none">
+        <Icon className="w-32 h-32 transform rotate-12" />
+      </div>
+
+      <div className="relative z-10">
+        <div className="flex justify-between items-start mb-4">
+          <p className="text-sm font-medium text-white/90 uppercase tracking-wide">{title}</p>
+          <div className="flex items-center gap-2">
+             {action}
+          </div>
         </div>
-        <div className={`p-2 ${iconBgColor} ${iconColor} rounded-lg`}>
-          <Icon className="w-5 h-5" />
+        <div>
+          <h3 className="text-3xl font-bold text-white mb-1">{value}</h3>
+          {secondaryValue && (
+            <p className="text-sm text-white/80">{secondaryValue}</p>
+          )}
+          {status && (
+            <p className="text-xs mt-2 text-white/70">{status}</p>
+          )}
+          {trend && (
+            <p className={`text-xs mt-2 flex items-center gap-1 ${trend.positive ? 'text-white/90' : 'text-white/70'}`}>
+              {trend.value}
+            </p>
+          )}
         </div>
       </div>
-      {trend && (
-        <p className={`text-xs mt-4 flex items-center gap-1 ${trend.positive ? 'text-success' : 'text-destructive'}`}>
-          {trend.value}
-        </p>
-      )}
-      {status && (
-        <p className={`text-xs mt-4 font-medium ${iconColor}`}>{status}</p>
-      )}
     </div>
   );
 };

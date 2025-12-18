@@ -53,100 +53,118 @@ const Configuracion = () => {
         {/* Content */}
         <div className="lg:col-span-3 bg-card rounded-xl shadow-sm p-6">
           {activeTab === 'general' && (
-            <div className="space-y-6">
-              <h2 className="text-lg font-bold text-foreground">Información del Negocio</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Nombre del Negocio</label>
-                  <input
-                    type="text"
-                    defaultValue="GastroAdmin Restaurant"
-                    className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Teléfono</label>
-                  <input
-                    type="tel"
-                    defaultValue="+52 555 123 4567"
-                    className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-foreground mb-1">Dirección</label>
-                  <input
-                    type="text"
-                    defaultValue="Av. Principal 123, Ciudad de México"
-                    className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Moneda</label>
-                  <select className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background">
-                    <option>MXN - Peso Mexicano</option>
-                    <option>USD - Dólar Americano</option>
-                    <option>EUR - Euro</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Zona Horaria</label>
-                  <select className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background">
-                    <option>América/Ciudad_de_México (GMT-6)</option>
-                    <option>América/Bogotá (GMT-5)</option>
-                    <option>América/Buenos_Aires (GMT-3)</option>
-                  </select>
+            <div className="bg-card rounded-xl shadow-sm overflow-hidden">
+              <div className="bg-[#222] p-4 border-b border-border">
+                <h2 className="text-lg font-bold text-white">Información del Negocio</h2>
+              </div>
+              <div className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">Nombre del Negocio</label>
+                    <input
+                      type="text"
+                      defaultValue="GastroAdmin Restaurant"
+                      className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">Teléfono</label>
+                    <input
+                      type="tel"
+                      defaultValue="+58 412 123 4567"
+                      className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-foreground mb-1">Dirección</label>
+                    <input
+                      type="text"
+                      defaultValue="Av. Bolívar, Caracas, Venezuela"
+                      className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">Moneda Principal</label>
+                    <select className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background">
+                      <option>VES - Bolívar Soberano</option>
+                      <option>USD - Dólar Americano</option>
+                      <option>EUR - Euro</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">Zona Horaria</label>
+                    <select className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background">
+                      <option>América/Caracas (GMT-4)</option>
+                      <option>América/Bogotá (GMT-5)</option>
+                      <option>América/Buenos_Aires (GMT-3)</option>
+                    </select>
+                  </div>
+                  <div>
+                     <label className="block text-sm font-medium text-foreground mb-1">IVA (%)</label>
+                     <input
+                       type="number"
+                       defaultValue="16"
+                       className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
+                     />
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
           {activeTab === 'usuario' && (
-            <div className="space-y-6">
-              <h2 className="text-lg font-bold text-foreground">Perfil de Usuario</h2>
-              <div className="flex items-center gap-4 mb-6">
-                <img
-                  src="https://i.pravatar.cc/150?img=11"
-                  alt="Avatar"
-                  className="w-20 h-20 rounded-full border-4 border-primary"
-                />
-                <button className="px-4 py-2 bg-secondary text-foreground rounded-lg text-sm hover:bg-secondary/80 transition-colors">
-                  Cambiar foto
-                </button>
+            <div className="bg-card rounded-xl shadow-sm overflow-hidden">
+              <div className="bg-[#222] p-4 border-b border-border">
+                <h2 className="text-lg font-bold text-white">Perfil de Usuario</h2>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Nombre</label>
-                  <input
-                    type="text"
-                    defaultValue="Carlos Admin"
-                    className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
+              <div className="p-6 space-y-6">
+                <div className="flex items-center gap-4 mb-6">
+                  <img
+                    src="https://i.pravatar.cc/150?img=11"
+                    alt="Avatar"
+                    className="w-20 h-20 rounded-full border-4 border-primary"
                   />
+                  <button className="px-4 py-2 bg-secondary text-foreground rounded-lg text-sm hover:bg-secondary/80 transition-colors">
+                    Cambiar foto
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Correo electrónico</label>
-                  <input
-                    type="email"
-                    defaultValue="carlos@gastroadmin.com"
-                    className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Rol</label>
-                  <input
-                    type="text"
-                    defaultValue="Gerente General"
-                    disabled
-                    className="w-full px-4 py-2 border border-border rounded-lg text-sm bg-secondary text-muted-foreground"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">Nombre</label>
+                    <input
+                      type="text"
+                      defaultValue="Carlos Admin"
+                      className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">Correo electrónico</label>
+                    <input
+                      type="email"
+                      defaultValue="carlos@gastroadmin.com"
+                      className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">Rol</label>
+                    <input
+                      type="text"
+                      defaultValue="Gerente General"
+                      disabled
+                      className="w-full px-4 py-2 border border-border rounded-lg text-sm bg-secondary text-muted-foreground"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
           {activeTab === 'notificaciones' && (
-            <div className="space-y-6">
-              <h2 className="text-lg font-bold text-foreground">Preferencias de Notificaciones</h2>
-              <div className="space-y-4">
+            <div className="bg-card rounded-xl shadow-sm overflow-hidden">
+              <div className="bg-[#222] p-4 border-b border-border">
+                <h2 className="text-lg font-bold text-white">Preferencias de Notificaciones</h2>
+              </div>
+              <div className="p-6 space-y-4">
                 {[
                   { label: 'Alertas de stock bajo', description: 'Recibe notificaciones cuando un producto tenga stock bajo' },
                   { label: 'Resumen diario de ventas', description: 'Recibe un resumen de las ventas al final del día' },
@@ -169,9 +187,11 @@ const Configuracion = () => {
           )}
 
           {activeTab === 'seguridad' && (
-            <div className="space-y-6">
-              <h2 className="text-lg font-bold text-foreground">Seguridad de la Cuenta</h2>
-              <div className="space-y-4">
+            <div className="bg-card rounded-xl shadow-sm overflow-hidden">
+              <div className="bg-[#222] p-4 border-b border-border">
+                <h2 className="text-lg font-bold text-white">Seguridad de la Cuenta</h2>
+              </div>
+              <div className="p-6 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1">Contraseña actual</label>
                   <input
@@ -204,9 +224,11 @@ const Configuracion = () => {
           )}
 
           {activeTab === 'datos' && (
-            <div className="space-y-6">
-              <h2 className="text-lg font-bold text-foreground">Gestión de Datos</h2>
-              <div className="space-y-4">
+            <div className="bg-card rounded-xl shadow-sm overflow-hidden">
+               <div className="bg-[#222] p-4 border-b border-border">
+                <h2 className="text-lg font-bold text-white">Gestión de Datos</h2>
+              </div>
+              <div className="p-6 space-y-4">
                 <div className="p-4 border border-border rounded-lg">
                   <h3 className="font-medium text-foreground mb-2">Exportar Datos</h3>
                   <p className="text-sm text-muted-foreground mb-3">Descarga una copia de todos tus datos en formato CSV o Excel.</p>
@@ -231,9 +253,11 @@ const Configuracion = () => {
           )}
 
           {activeTab === 'apariencia' && (
-            <div className="space-y-6">
-              <h2 className="text-lg font-bold text-foreground">Apariencia</h2>
-              <div className="space-y-4">
+            <div className="bg-card rounded-xl shadow-sm overflow-hidden">
+               <div className="bg-[#222] p-4 border-b border-border">
+                <h2 className="text-lg font-bold text-white">Apariencia</h2>
+              </div>
+              <div className="p-6 space-y-4">
                 <div className="p-4 border border-border rounded-lg">
                   <h3 className="font-medium text-foreground mb-2">Tema</h3>
                   <p className="text-sm text-muted-foreground mb-3">Selecciona el tema de la interfaz.</p>

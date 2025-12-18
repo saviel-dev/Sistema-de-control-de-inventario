@@ -1,5 +1,5 @@
-import { ArrowLeftRight, ArrowDown, ArrowUp, Plus, Search, Filter, Calendar } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeftRight, ArrowDown, ArrowUp, Plus, Search, Calendar, Table2, Grid3x3, ArrowDownCircle, ArrowUpCircle, RefreshCw, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface Movement {
   id: string;
@@ -26,16 +26,25 @@ const movements: Movement[] = [
 ];
 
 const typeConfig = {
-  entrada: { label: 'Entrada', icon: ArrowDown, className: 'bg-success/10 text-success', iconBg: 'bg-success/10' },
-  salida: { label: 'Salida', icon: ArrowUp, className: 'bg-info/10 text-info', iconBg: 'bg-info/10' },
-  ajuste: { label: 'Ajuste', icon: ArrowLeftRight, className: 'bg-warning/10 text-warning', iconBg: 'bg-warning/10' },
-  merma: { label: 'Merma', icon: ArrowUp, className: 'bg-destructive/10 text-destructive', iconBg: 'bg-destructive/10' },
+  entrada: { label: 'Entrada', icon: ArrowDownCircle, className: 'bg-success/10 text-success', bgColor: 'bg-green-500', iconBg: 'bg-green-600' },
+  salida: { label: 'Salida', icon: ArrowUpCircle, className: 'bg-info/10 text-info', bgColor: 'bg-blue-500', iconBg: 'bg-blue-600' },
+  ajuste: { label: 'Ajuste', icon: RefreshCw, className: 'bg-warning/10 text-warning', bgColor: 'bg-amber-500', iconBg: 'bg-amber-600' },
+  merma: { label: 'Merma', icon: AlertTriangle, className: 'bg-destructive/10 text-destructive', bgColor: 'bg-rose-500', iconBg: 'bg-rose-600' },
 };
 
 const Movimientos = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [dateFilter, setDateFilter] = useState('');
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
+
+  // Actualizar título del header
+  useEffect(() => {
+    const headerTitle = document.querySelector('header h2');
+    if (headerTitle) {
+      headerTitle.textContent = 'Movimientos';
+    }
+  }, []);
 
   const filteredMovements = movements.filter(movement => {
     const matchesSearch = movement.product.toLowerCase().includes(searchTerm.toLowerCase());
@@ -50,37 +59,43 @@ const Movimientos = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <ArrowLeftRight className="w-7 h-7 text-primary" />
-            Movimientos
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">Registro de entradas, salidas y ajustes de inventario</p>
-        </div>
-        <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm hover:bg-primary/90 transition-colors flex items-center gap-2">
-          <Plus className="w-4 h-4" /> Nuevo Movimiento
-        </button>
-      </div>
-
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-card p-4 rounded-xl shadow-sm border-l-4 border-success">
-          <p className="text-xs text-muted-foreground uppercase">Entradas Hoy</p>
-          <p className="text-2xl font-bold text-success">{todayEntries}</p>
+        <div className="bg-green-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
+          <div className="flex justify-between items-start mb-2">
+            <p className="text-xs font-medium text-white/90 uppercase tracking-wide">Entradas Hoy</p>
+            <div className="p-2 bg-green-600 rounded-full flex items-center justify-center">
+              <ArrowDownCircle className="w-5 h-5 text-white" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-white">{todayEntries}</p>
         </div>
-        <div className="bg-card p-4 rounded-xl shadow-sm border-l-4 border-info">
-          <p className="text-xs text-muted-foreground uppercase">Salidas Hoy</p>
-          <p className="text-2xl font-bold text-info">{todayExits}</p>
+        <div className="bg-blue-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
+          <div className="flex justify-between items-start mb-2">
+            <p className="text-xs font-medium text-white/90 uppercase tracking-wide">Salidas Hoy</p>
+            <div className="p-2 bg-blue-600 rounded-full flex items-center justify-center">
+              <ArrowUpCircle className="w-5 h-5 text-white" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-white">{todayExits}</p>
         </div>
-        <div className="bg-card p-4 rounded-xl shadow-sm border-l-4 border-warning">
-          <p className="text-xs text-muted-foreground uppercase">Ajustes/Mermas Hoy</p>
-          <p className="text-2xl font-bold text-warning">{todayAdjustments}</p>
+        <div className="bg-amber-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
+          <div className="flex justify-between items-start mb-2">
+            <p className="text-xs font-medium text-white/90 uppercase tracking-wide">Ajustes/Mermas</p>
+            <div className="p-2 bg-amber-600 rounded-full flex items-center justify-center">
+              <RefreshCw className="w-5 h-5 text-white" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-white">{todayAdjustments}</p>
         </div>
-        <div className="bg-card p-4 rounded-xl shadow-sm border-l-4 border-primary">
-          <p className="text-xs text-muted-foreground uppercase">Total Movimientos</p>
-          <p className="text-2xl font-bold text-foreground">{movements.length}</p>
+        <div className="bg-purple-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
+          <div className="flex justify-between items-start mb-2">
+            <p className="text-xs font-medium text-white/90 uppercase tracking-wide">Total Movimientos</p>
+            <div className="p-2 bg-purple-600 rounded-full flex items-center justify-center">
+              <ArrowLeftRight className="w-5 h-5 text-white" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-white">{movements.length}</p>
         </div>
       </div>
 
@@ -100,7 +115,7 @@ const Movimientos = () => {
           <select
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value)}
-            className="px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
+            className="select-category"
           >
             <option value="all">Todos los tipos</option>
             <option value="entrada">Entradas</option>
@@ -109,62 +124,171 @@ const Movimientos = () => {
             <option value="merma">Mermas</option>
           </select>
           <div className="relative">
-            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             <input
               type="date"
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="pl-9 pr-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
+              className="pl-9 pr-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background w-full"
             />
           </div>
+          <div className="flex gap-2 border border-border rounded-lg overflow-hidden">
+            <button
+              onClick={() => setViewMode('table')}
+              className={`px-4 py-2 text-sm transition-colors flex items-center gap-1 ${
+                viewMode === 'table'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-background text-foreground hover:bg-secondary'
+              }`}
+            >
+              <Table2 className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`px-4 py-2 text-sm transition-colors flex items-center gap-1 ${
+                viewMode === 'cards'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-background text-foreground hover:bg-secondary'
+              }`}
+            >
+              <Grid3x3 className="w-4 h-4" />
+            </button>
+          </div>
+          <button
+            type="button"
+            className="button"
+          >
+            <Plus className="w-4 h-4" />
+            Nuevo Movimiento
+          </button>
         </div>
       </div>
 
-      {/* Movements List */}
-      <div className="bg-card rounded-xl shadow-sm overflow-hidden">
-        <div className="divide-y divide-border">
+      {/* Movements View */}
+      {viewMode === 'table' ? (
+        <div className="bg-card rounded-xl shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#222] text-white text-xs uppercase tracking-wider">
+                  <th className="p-4 font-medium text-center">ID</th>
+                  <th className="p-4 font-medium text-center">Fecha/Hora</th>
+                  <th className="p-4 font-medium text-center">Producto</th>
+                  <th className="p-4 font-medium text-center">Tipo</th>
+                  <th className="p-4 font-medium text-center">Cantidad</th>
+                  <th className="p-4 font-medium text-center">Razón</th>
+                  <th className="p-4 font-medium text-center">Usuario</th>
+                  <th className="p-4 font-medium text-center">Referencia</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm text-foreground divide-y divide-border">
+                {filteredMovements.map((movement) => {
+                  const config = typeConfig[movement.type];
+                  return (
+                    <tr key={movement.id} className="hover:bg-primary/5 transition-colors">
+                      <td className="p-4 font-medium text-muted-foreground text-center">{movement.id}</td>
+                      <td className="p-4 text-center">
+                        <div>
+                          <p className="font-medium">{movement.date}</p>
+                          <p className="text-xs text-muted-foreground">{movement.time}</p>
+                        </div>
+                      </td>
+                      <td className="p-4 font-semibold text-center">{movement.product}</td>
+                      <td className="p-4 text-center">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${config.className}`}>
+                          {config.label}
+                        </span>
+                      </td>
+                      <td className={`p-4 font-bold text-center ${
+                        movement.type === 'entrada' ? 'text-success' : 
+                        movement.type === 'salida' || movement.type === 'merma' ? 'text-destructive' : 
+                        'text-warning'
+                      }`}>
+                        {movement.type === 'entrada' ? '+' : movement.type === 'ajuste' && movement.quantity > 0 ? '+' : '-'}
+                        {Math.abs(movement.quantity)} {movement.unit}
+                      </td>
+                      <td className="p-4 text-center text-muted-foreground">{movement.reason}</td>
+                      <td className="p-4 text-center">{movement.user}</td>
+                      <td className="p-4 text-center text-muted-foreground">{movement.reference || '-'}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          {filteredMovements.length === 0 && (
+            <div className="p-8 text-center text-muted-foreground">
+              No hay movimientos para mostrar
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredMovements.map((movement) => {
             const config = typeConfig[movement.type];
             const Icon = config.icon;
-            
             return (
-              <div key={movement.id} className="p-4 hover:bg-primary/5 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full ${config.iconBg} flex items-center justify-center`}>
-                      <Icon className={`w-5 h-5 ${config.className.split(' ')[1]}`} />
+              <div key={movement.id} className="bg-card rounded-xl shadow-sm p-4 border border-border hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 ${config.iconBg} rounded-full flex items-center justify-center`}>
+                      <Icon className="w-5 h-5 text-white" />
                     </div>
                     <div>
+                      <p className="text-xs text-muted-foreground font-medium">{movement.id}</p>
                       <p className="font-semibold text-foreground">{movement.product}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {movement.date} a las {movement.time} • {movement.reason}
-                      </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className={`font-bold ${movement.type === 'entrada' ? 'text-success' : movement.type === 'salida' || movement.type === 'merma' ? 'text-destructive' : 'text-warning'}`}>
-                      {movement.type === 'entrada' ? '+' : '-'}{Math.abs(movement.quantity)} {movement.unit}
-                    </p>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${config.className}`}>
-                      {config.label}
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${config.className}`}>
+                    {config.label}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Cantidad</span>
+                    <span className={`text-sm font-bold ${
+                      movement.type === 'entrada' ? 'text-success' : 
+                      movement.type === 'salida' || movement.type === 'merma' ? 'text-destructive' : 
+                      'text-warning'
+                    }`}>
+                      {movement.type === 'entrada' ? '+' : movement.type === 'ajuste' && movement.quantity > 0 ? '+' : '-'}
+                      {Math.abs(movement.quantity)} {movement.unit}
                     </span>
                   </div>
-                </div>
-                <div className="mt-2 ml-14 flex gap-4 text-xs text-muted-foreground">
-                  <span>Usuario: {movement.user}</span>
-                  {movement.reference && <span>Ref: {movement.reference}</span>}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Fecha</span>
+                    <span className="text-sm text-foreground">{movement.date}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Hora</span>
+                    <span className="text-sm text-foreground">{movement.time}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Razón</span>
+                    <span className="text-sm text-foreground text-right">{movement.reason}</span>
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t border-border">
+                    <span className="text-xs text-muted-foreground">Usuario</span>
+                    <span className="text-sm font-medium text-foreground">{movement.user}</span>
+                  </div>
+                  {movement.reference && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Referencia</span>
+                      <span className="text-sm text-muted-foreground">{movement.reference}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             );
           })}
         </div>
-        
-        <div className="p-4 border-t border-border flex justify-center">
-          <button className="text-sm text-primary hover:underline font-medium">
-            Cargar más movimientos
-          </button>
+      )}
+
+      {filteredMovements.length === 0 && viewMode === 'cards' && (
+        <div className="bg-card rounded-xl shadow-sm p-8 text-center text-muted-foreground">
+          No hay movimientos para mostrar
         </div>
-      </div>
+      )}
     </div>
   );
 };

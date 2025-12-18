@@ -9,9 +9,11 @@ const movements = [
 
 const RecentMovements = () => {
   return (
-    <div className="bg-card p-6 rounded-xl shadow-sm">
-      <h3 className="font-bold text-foreground text-lg mb-4">Últimos Movimientos</h3>
-      <div className="space-y-4">
+    <div className="bg-card rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-[#222] p-4 border-b border-border">
+        <h3 className="font-bold text-white text-lg">Últimos Movimientos</h3>
+      </div>
+      <div className="p-6 space-y-4">
         {movements.map((movement, index) => (
           <div
             key={movement.id}

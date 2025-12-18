@@ -1,75 +1,57 @@
-import { useState } from 'react';
-import { DollarSign, AlertTriangle, Warehouse, Clock, TrendingUp } from 'lucide-react';
+import { AlertTriangle, TrendingUp, Coins, Wallet } from 'lucide-react';
 import StatCard from '@/components/dashboard/StatCard';
-import SalesChart from '@/components/dashboard/SalesChart';
 import RecentMovements from '@/components/dashboard/RecentMovements';
-import InventoryTable from '@/components/dashboard/InventoryTable';
-import FloatingActionButton from '@/components/dashboard/FloatingActionButton';
-import QuickActionModal from '@/components/dashboard/QuickActionModal';
 
 const Dashboard = () => {
-  const [modalOpen, setModalOpen] = useState(false);
-
   return (
     <>
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
-          title="Ventas Hoy"
-          value="$1,240.50"
-          icon={DollarSign}
-          trend={{ value: '+12% vs ayer', positive: true }}
-          borderColor="border-primary"
-          iconBgColor="bg-primary/10"
-          iconColor="text-primary"
-        />
-        <StatCard
           title="Bajo Stock"
           value="8 Productos"
           icon={AlertTriangle}
           status="Requiere atención"
-          borderColor="border-destructive"
-          iconBgColor="bg-destructive/10"
-          iconColor="text-destructive"
+          bgColor="bg-green-500"
+          iconBgColor="bg-green-600"
+        />
+        <StatCard
+          title="Tasa Dólar"
+          value="Bs. 279.56"
+          icon={TrendingUp}
+          status="18-dic., 02:02 p. m."
+          bgColor="bg-teal-600"
+          iconBgColor="bg-teal-700"
         />
         <StatCard
           title="Valor Inventario"
-          value="$15,430"
-          icon={Warehouse}
-          status="Actualizado hace 1h"
-          borderColor="border-info"
-          iconBgColor="bg-info/10"
-          iconColor="text-info"
+          value="$15,430.00"
+          icon={Coins}
+          status="Actualizado hoy"
+          bgColor="bg-emerald-600"
+          iconBgColor="bg-emerald-700"
         />
         <StatCard
-          title="Órdenes Pendientes"
-          value="12"
-          icon={Clock}
-          status="Cocina activa"
-          borderColor="border-warning"
-          iconBgColor="bg-warning/10"
-          iconColor="text-warning"
+          title="Balance"
+          value="$20,500.00"
+          icon={Wallet}
+          status="Ingasos vs Egresos"
+          bgColor="bg-indigo-600"
+          iconBgColor="bg-indigo-700"
+          action={
+            <select className="bg-white/20 border-none text-white text-xs rounded px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50">
+              <option value="daily" className="text-black">Diario</option>
+              <option value="weekly" className="text-black">Semanal</option>
+            </select>
+          }
         />
       </div>
 
       {/* Chart and Movements */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        <div className="lg:col-span-2">
-          <SalesChart />
-        </div>
+      <div className="grid grid-cols-1 gap-8 mb-8">
         <RecentMovements />
       </div>
 
-      {/* Inventory Table */}
-      <div className="mb-20">
-        <InventoryTable />
-      </div>
-
-      {/* Floating Action Button */}
-      <FloatingActionButton onClick={() => setModalOpen(true)} />
-
-      {/* Quick Action Modal */}
-      <QuickActionModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
     </>
   );
 };

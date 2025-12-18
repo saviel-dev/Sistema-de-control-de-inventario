@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
 @layer base {
   :root {
     --background: 220 14% 96%;
@@ -99,7 +97,6 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', sans-serif;
   }
 
   /* Custom scrollbar */
@@ -131,5 +128,87 @@
 
   .dark .glass-effect {
     background: rgba(34, 34, 34, 0.95);
+  }
+
+  /* Button styles for Nuevo Producto */
+  .button {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid #E9762B;
+    background-color: #E9762B;
+    border-radius: 5px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+  }
+
+  .button:hover {
+    background-color: #d6681f;
+    border-color: #d6681f;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(233, 118, 43, 0.3);
+  }
+
+  /* Button styles for Exportar */
+  .button-export {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid #3b82f6;
+    background-color: #3b82f6;
+    border-radius: 5px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+  }
+
+  .button-export:hover {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+  }
+
+  /* Select styles for Categorías */
+  .select-category {
+    padding: 0.5rem 2.5rem 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    background-color: #3b82f6;
+    color: #fff;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+  }
+
+  .select-category:hover {
+    background-color: #2563eb;
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+    transform: translateY(-1px);
+  }
+
+  .select-category:focus {
+    outline: none;
+    background-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+
+  .select-category option {
+    background-color: #fff;
+    color: #1f2937;
+    padding: 0.5rem;
   }
 }

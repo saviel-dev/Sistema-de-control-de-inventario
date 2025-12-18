@@ -1,73 +1,106 @@
-# Welcome to your Lovable project
+# GastroFlow Manager
 
-## Project info
+Sistema de gestión de inventario para restaurantes y negocios gastronómicos.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## 📋 Descripción
 
-## How can I edit this code?
+GastroFlow Manager es una aplicación web progresiva (PWA) diseñada para facilitar la gestión de inventario en restaurantes. Ofrece una interfaz moderna y funcional para controlar productos, movimientos, reportes y configuraciones.
 
-There are several ways of editing your application.
+## ✨ Características
 
-**Use Lovable**
+- **Dashboard Interactivo**: Visualización de métricas clave y últimos movimientos
+- **Gestión de Inventario**: Vista de tabla y tarjetas con imágenes de productos
+- **Control de Movimientos**: Registro de entradas y salidas de productos
+- **Reportes**: Análisis y estadísticas del inventario
+- **Sistema de Notificaciones**: Alertas en tiempo real
+- **PWA**: Instalable como aplicación móvil
+- **Diseño Responsivo**: Optimizado para todos los dispositivos
+- **Modo Oscuro/Claro**: Interfaz adaptable
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## 🚀 Tecnologías
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Frontend Framework**: React 18 con TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui
+- **Icons**: Lucide React
+- **Animations**: Framer Motion (próximamente)
+- **State Management**: React Context API
+- **Routing**: React Router v6
 
-**Use your preferred IDE**
+## 📦 Instalación
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Requisitos previos
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Node.js 18+ y npm instalados
+- Git
 
-Follow these steps:
+### Pasos de instalación
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Clonar el repositorio
+git clone <URL_DEL_REPOSITORIO>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navegar al directorio del proyecto
+cd gastroflow-manager
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Instalar dependencias
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Iniciar el servidor de desarrollo
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+La aplicación estará disponible en `http://localhost:5173`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🏗️ Scripts Disponibles
 
-**Use GitHub Codespaces**
+```sh
+# Desarrollo
+npm run dev
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Build de producción
+npm run build
 
-## What technologies are used for this project?
+# Preview del build
+npm run preview
 
-This project is built with:
+# Linter
+npm run lint
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 📱 Instalación como PWA
 
-## How can I deploy this project?
+1. Abre la aplicación en tu navegador móvil (Chrome/Safari)
+2. Busca la opción "Agregar a pantalla de inicio" o "Instalar app"
+3. Confirma la instalación
+4. La app aparecerá en tu pantalla de inicio
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## 🎨 Características de UI/UX
 
-## Can I connect a custom domain to my Lovable project?
+- Sidebar colapsable con iconos
+- Notificaciones con panel dropdown
+- Cards de productos con imágenes
+- Menús contextuales para acciones rápidas
+- Animaciones suaves de transición
+- Footer con información de copyright
 
-Yes, you can!
+## 👨‍💻 Autor
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+**Julian Herrera** - Todos los derechos reservados © 2025
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## 📄 Licencia
+
+Este proyecto es privado y está protegido por derechos de autor.
+
+## 🔧 Configuración
+
+La aplicación utiliza:
+
+- Color tema principal: `#22c55e` (Verde)
+- Tipografía: Inter (Google Fonts)
+- Breakpoints responsivos de Tailwind CSS
+
+## 📞 Soporte
+
+Para soporte o consultas, contacta al desarrollador.
