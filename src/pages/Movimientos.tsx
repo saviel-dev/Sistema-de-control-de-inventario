@@ -1,27 +1,15 @@
-import { ArrowLeftRight, ArrowDown, ArrowUp, Plus, Search, Calendar, Table2, Grid3x3, ArrowDownCircle, ArrowUpCircle, RefreshCw, AlertTriangle } from 'lucide-react';
+import { ArrowLeftRight, Search, Calendar, Table2, Grid3x3, ArrowDownCircle, ArrowUpCircle, RefreshCw, AlertTriangle, Loader2, Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import PageTransition from '@/components/layout/PageTransition';
+import { useMovements } from '@/contexts/MovementsContext';
 
-interface Movement {
-  id: string;
-  date: string;
-  time: string;
-  product: string;
-  type: 'entrada' | 'salida' | 'ajuste' | 'merma';
-  quantity: number;
-  unit: string;
-  reason: string;
-  user: string;
-  reference?: string;
-}
 
-const movements: Movement[] = [];
 
 const typeConfig = {
   entrada: { label: 'Entrada', icon: ArrowDownCircle, className: 'bg-success/10 text-success', bgColor: 'bg-green-500', iconBg: 'bg-green-600' },
   salida: { label: 'Salida', icon: ArrowUpCircle, className: 'bg-info/10 text-info', bgColor: 'bg-blue-500', iconBg: 'bg-blue-600' },
   ajuste: { label: 'Ajuste', icon: RefreshCw, className: 'bg-warning/10 text-warning', bgColor: 'bg-amber-500', iconBg: 'bg-amber-600' },
-  merma: { label: 'Merma', icon: AlertTriangle, className: 'bg-destructive/10 text-destructive', bgColor: 'bg-rose-500', iconBg: 'bg-rose-600' },
+  transferencia: { label: 'Transferencia', icon: ArrowLeftRight, className: 'bg-purple/10 text-purple', bgColor: 'bg-purple-500', iconBg: 'bg-purple-600' },
 };
 
 const Movimientos = () => {
@@ -29,6 +17,8 @@ const Movimientos = () => {
   const [selectedType, setSelectedType] = useState('all');
   const [dateFilter, setDateFilter] = useState('');
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards');
+  
+  const { movements, loading, error, statistics, refreshMovements } = useMovements();
 
   // Actualizar título del header
   useEffect(() => {
@@ -45,10 +35,7 @@ const Movimientos = () => {
     return matchesSearch && matchesType && matchesDate;
   });
 
-  const todayEntries = movements.filter(m => m.date === '2024-01-18' && m.type === 'entrada').length;
-  const todayExits = movements.filter(m => m.date === '2024-01-18' && m.type === 'salida').length;
-  const todayAdjustments = movements.filter(m => m.date === '2024-01-18' && m.type === 'ajuste').length;
-  const todayMermas = movements.filter(m => m.date === '2024-01-18' && m.type === 'merma').length;
+  // Los stats vienen del contexto
 
   return (
     <PageTransition>
@@ -62,7 +49,7 @@ const Movimientos = () => {
               <ArrowDownCircle className="w-5 h-5 text-white" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-white">{todayEntries}</p>
+          <p className="text-2xl font-bold text-white">{statistics.todayEntries}</p>
         </div>
         <div className="bg-blue-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
           <div className="flex justify-between items-start mb-2">
@@ -71,25 +58,25 @@ const Movimientos = () => {
               <ArrowUpCircle className="w-5 h-5 text-white" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-white">{todayExits}</p>
+          <p className="text-2xl font-bold text-white">{statistics.todayExits}</p>
         </div>
         <div className="bg-rose-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
           <div className="flex justify-between items-start mb-2">
-            <p className="text-xs font-medium text-white/90 uppercase tracking-wide">Pérdidas / Mermas</p>
-            <div className="p-2 bg-rose-600 rounded-full flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5 text-white" />
+            <p className="text-xs font-medium text-white/90 uppercase tracking-wide">Ajustes Hoy</p>
+            <div className="p-2 bg-amber-600 rounded-full flex items-center justify-center">
+              <RefreshCw className="w-5 h-5 text-white" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-white">{todayMermas}</p>
+          <p className="text-2xl font-bold text-white">{statistics.todayAdjustments}</p>
         </div>
         <div className="bg-purple-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
           <div className="flex justify-between items-start mb-2">
-            <p className="text-xs font-medium text-white/90 uppercase tracking-wide">Total Movimientos</p>
+            <p className="text-xs font-medium text-white/90 uppercase tracking-wide">Transferencias Hoy</p>
             <div className="p-2 bg-purple-600 rounded-full flex items-center justify-center">
               <ArrowLeftRight className="w-5 h-5 text-white" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-white">{movements.length}</p>
+          <p className="text-2xl font-bold text-white">{statistics.todayTransfers}</p>
         </div>
       </div>
 
@@ -213,7 +200,7 @@ const Movimientos = () => {
                       </td>
                       <td className={`p-4 font-bold text-center ${
                         movement.type === 'entrada' ? 'text-success' : 
-                        movement.type === 'salida' || movement.type === 'merma' ? 'text-destructive' : 
+                        movement.type === 'salida' || movement.type === 'transferencia' ? 'text-destructive' : 
                         'text-warning'
                       }`}>
                         {movement.type === 'entrada' ? '+' : movement.type === 'ajuste' && movement.quantity > 0 ? '+' : '-'}
@@ -261,9 +248,9 @@ const Movimientos = () => {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-2.5 bg-secondary/30 rounded-lg">
                     <span className="text-xs text-muted-foreground font-medium">Cantidad</span>
-                    <span className={`text-base font-bold ${
+                    <span className={`textbase font-bold ${
                       movement.type === 'entrada' ? 'text-success' : 
-                      movement.type === 'salida' || movement.type === 'merma' ? 'text-destructive' : 
+                      movement.type === 'salida' || movement.type === 'transferencia' ? 'text-destructive' : 
                       'text-warning'
                     }`}>
                       {movement.type === 'entrada' ? '+' : movement.type === 'ajuste' && movement.quantity > 0 ? '+' : ''}

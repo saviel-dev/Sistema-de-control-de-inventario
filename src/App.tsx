@@ -5,6 +5,7 @@ import { ProductProvider } from '@/contexts/ProductContext';
 import { ExchangeRateProvider } from '@/contexts/ExchangeRateContext';
 import { LocationProvider } from '@/contexts/LocationContext';
 import { DetailedInventoryProvider } from '@/contexts/DetailedInventoryContext';
+import { MovementsProvider } from '@/contexts/MovementsContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import Dashboard from '@/pages/Dashboard';
 import InventarioGeneral from '@/pages/InventarioGeneral';
@@ -23,23 +24,25 @@ function App() {
           <ProductProvider>
             <LocationProvider>
               <DetailedInventoryProvider>
-                <Router>
-                  <Toaster position="top-right" richColors />
-                  <Routes>
-                    {/* Ruta pública - Login */}
-                    <Route path="/" element={<Index />} />
-                    
-                    {/* Rutas protegidas - Dashboard */}
-                    <Route element={<DashboardLayout />}>
-                      <Route path="dashboard" element={<Dashboard />} />
-                      <Route path="inventario-general" element={<InventarioGeneral />} />
-                      <Route path="inventario-detallado" element={<InventarioDetallado />} />
-                      <Route path="movimientos" element={<Movimientos />} />
-                      <Route path="configuracion" element={<Configuracion />} />
-                      <Route path="reportes" element={<Reportes />} />
-                    </Route>
-                  </Routes>
-                </Router>
+                <MovementsProvider>
+                  <Router>
+                    <Toaster position="top-right" richColors />
+                    <Routes>
+                      {/* Ruta pública - Login */}
+                      <Route path="/" element={<Index />} />
+                      
+                      {/* Rutas protegidas - Dashboard */}
+                      <Route element={<DashboardLayout />}>
+                        <Route path="dashboard" element={<Dashboard />} />
+                        <Route path="inventario-general" element={<InventarioGeneral />} />
+                        <Route path="inventario-detallado" element={<InventarioDetallado />} />
+                        <Route path="movimientos" element={<Movimientos />} />
+                        <Route path="configuracion" element={<Configuracion />} />
+                        <Route path="reportes" element={<Reportes />} />
+                      </Route>
+                    </Routes>
+                  </Router>
+                </MovementsProvider>
               </DetailedInventoryProvider>
             </LocationProvider>
           </ProductProvider>
