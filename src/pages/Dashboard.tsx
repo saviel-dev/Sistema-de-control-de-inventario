@@ -29,25 +29,21 @@ const Dashboard = () => {
         />
         <StatCard
           title="Valor Inventario"
-          value="$15,430.00"
+          value="$430.22"
+          secondaryValue={`Bs. ${(430.22 * rate).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           icon={Coins}
           status="Actualizado hoy"
           bgColor="bg-emerald-600"
           iconBgColor="bg-emerald-700"
         />
         <StatCard
-          title="Balance"
-          value="$20,500.00"
-          icon={Wallet}
-          status="Ingasos vs Egresos"
+          title="Movimientos del Mes"
+          value="127"
+          secondaryValue="Entradas y salidas"
+          icon={TrendingUp}
+          status="Diciembre 2024"
           bgColor="bg-violet-600"
           iconBgColor="bg-violet-700"
-          action={
-            <select className="bg-white/20 border-none text-white text-xs rounded px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50">
-              <option value="daily" className="text-black">Diario</option>
-              <option value="weekly" className="text-black">Semanal</option>
-            </select>
-          }
         />
       </div>
 

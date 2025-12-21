@@ -1,6 +1,6 @@
 import { ClipboardList, Search, Plus, Edit, Trash2, Folder, ChevronRight, X, Table2, Grid3x3, Save, List, Package, MoreVertical, Eye, Store } from 'lucide-react';
 import PageTransition from '@/components/layout/PageTransition';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useExchangeRate } from '@/contexts/ExchangeRateContext';
 import { useProduct, Product } from '@/contexts/ProductContext';
 import { toast } from 'sonner';
@@ -46,18 +46,18 @@ const InventarioDetallado = () => {
   });
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isAddingProduct, setIsAddingProduct] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // New state for selecting from general inventory
   const [selectedGeneralProductId, setSelectedGeneralProductId] = useState<string>('');
-  const [formData, setFormData] = useState<Omit<Product, 'id'>>({
+  const [formData, setFormData] = useState<Partial<Product>>({
     name: '',
     category: '',
-    stock: 0,
     unit: '',
-    minStock: 0,
-    price: 0,
     status: 'available',
   });
+
 
   const currentProducts = selectedLocation ? products[selectedLocation] || [] : [];
   const categories = ['all', ...new Set(currentProducts.map(p => p.category))];
@@ -82,14 +82,15 @@ const InventarioDetallado = () => {
        }
 
        // Deduct from General Inventory
-       recordMovement(selectedGeneralProductId, formData.stock, 'out');
+       recordMovement(selectedGeneralProductId, formData.stock || 0, 'out');
        
        const newId = `#${String(currentProducts.length + 1).padStart(3, '0')}-${Date.now()}`; // Unique ID
        const newProduct: Product = { 
            ...generalProduct, 
            id: newId,
-           stock: formData.stock, // Override stock with selected quantity
-           // Optionally override other fields if editable
+           stock: formData.stock || 0, 
+           minStock: formData.minStock || 0,
+           image: imagePreview || generalProduct.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop'
        };
        
        setProducts({
@@ -99,38 +100,69 @@ const InventarioDetallado = () => {
        
        toast.success("Producto agregado del inventario general");
     } else {
-        // Fallback for custom product creation (if user still wants to allow it, or just strictly from general)
-        // For now, let's assume we allow both but prioritizing general selection
         const newId = `#${String(currentProducts.length + 1).padStart(3, '0')}`;
-        const newProduct: Product = { ...formData, id: newId };
+        const newProduct: Product = { 
+            name: formData.name || '',
+            category: formData.category || 'General',
+            stock: formData.stock || 0,
+            unit: formData.unit || 'Unidades',
+            minStock: formData.minStock || 0,
+            price: formData.price || 0,
+            status: formData.status || 'available',
+            image: imagePreview || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop',
+            id: newId 
+        };
         setProducts({
           ...products,
           [selectedLocation]: [...currentProducts, newProduct],
         });
+        toast.success("Producto creado localmente");
     }
 
     setIsAddingProduct(false);
-    setFormData({ name: '', category: '', stock: 0, unit: '', minStock: 0, price: 0, status: 'available' });
+    setFormData({ name: '', category: '', unit: '', status: 'available' });
     setSelectedGeneralProductId('');
+    setImagePreview(null);
   };
+
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
     setFormData({ name: product.name, category: product.category, stock: product.stock, unit: product.unit, minStock: product.minStock, price: product.price, status: product.status });
+    setImagePreview(product.image || null);
   };
+
 
   const handleUpdateProduct = () => {
     if (!selectedLocation || !editingProduct) return;
     const updatedProducts = currentProducts.map(p => 
-      p.id === editingProduct.id ? { ...formData, id: editingProduct.id } : p
+      p.id === editingProduct.id ? { 
+          ...p,
+          ...formData, 
+          image: imagePreview || p.image,
+          id: editingProduct.id 
+      } as Product : p
     );
     setProducts({
       ...products,
       [selectedLocation]: updatedProducts,
     });
     setEditingProduct(null);
-    setFormData({ name: '', category: '', stock: 0, unit: '', minStock: 0, price: 0, status: 'available' });
+    setFormData({ name: '', category: '', unit: '', status: 'available' });
+    setImagePreview(null);
   };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
 
   const handleDeleteProduct = (productId: string) => {
     if (!selectedLocation) return;
@@ -145,9 +177,11 @@ const InventarioDetallado = () => {
   const handleCloseForm = () => {
     setIsAddingProduct(false);
     setEditingProduct(null);
-    setFormData({ name: '', category: '', stock: 0, unit: '', minStock: 0, price: 0, status: 'available' });
+    setFormData({ name: '', category: '', unit: '', status: 'available' });
     setSelectedGeneralProductId('');
+    setImagePreview(null);
   };
+
 
   // Actualizar título del header
   useEffect(() => {
@@ -238,7 +272,7 @@ const InventarioDetallado = () => {
               onClick={() => setSelectedLocation(null)}
               className="p-2 hover:bg-secondary rounded-lg transition-colors flex-shrink-0"
             >
-              <ChevronRight className="w-5 h-5 rotate-180" />
+              <X className="w-5 h-5 rotate-180" />
             </button>
             <div className="min-w-0 flex-1">
               <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
@@ -312,24 +346,25 @@ const InventarioDetallado = () => {
 
         {/* Form Modal para Agregar/Editar */}
         {(isAddingProduct || editingProduct) && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-foreground/60 backdrop-blur-sm" onClick={handleCloseForm} />
-            <div className="relative bg-card rounded-xl shadow-2xl p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-foreground">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2">
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={handleCloseForm} />
+            <div className="relative bg-card rounded-xl shadow-2xl p-3 sm:p-4 w-full max-w-md max-h-[96vh] overflow-y-auto border border-border z-[10000]">
+              <div className="flex justify-between items-center mb-3 pb-2 border-b border-border">
+                <h2 className="text-base font-bold text-foreground">
                   {editingProduct ? 'Editar Producto' : 'Agregar Producto'}
                 </h2>
-                <button onClick={handleCloseForm} className="p-2 hover:bg-secondary rounded-lg">
-                  <X className="w-5 h-5" />
+                <button onClick={handleCloseForm} className="p-1 hover:bg-secondary rounded-lg transition-colors">
+                  <X className="w-4 h-4" />
                 </button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              <div className="space-y-3">
                 {/* Select General Product */}
                 {!editingProduct && (
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-foreground mb-1">Seleccionar desde Inventario General</label>
+                  <div className="bg-secondary/30 p-2.5 rounded-lg border border-border/50">
+                    <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Inventario General</label>
                     <select
-                        className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
+                        className="w-full px-2.5 py-1.5 border border-border rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
                         value={selectedGeneralProductId}
                         onChange={(e) => {
                             const pid = e.target.value;
@@ -345,102 +380,161 @@ const InventarioDetallado = () => {
                                     price: gp.price,
                                     status: gp.status
                                 });
+                                setImagePreview(gp.image || null);
                             }
                         }}
                     >
-                        <option value="">-- Seleccionar Producto --</option>
+                        <option value="">-- Seleccionar --</option>
                         {generalProducts.map(p => (
-                            <option key={p.id} value={p.id}>{p.name} (Stock General: {p.stock})</option>
+                            <option key={p.id} value={p.id}>{p.name} ({p.stock} {p.unit})</option>
                         ))}
                     </select>
                   </div>
                 )}
 
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Nombre</label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
-                    disabled={!!selectedGeneralProductId}
-                  />
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="block text-[10px] font-semibold text-foreground mb-0.5">Nombre</label>
+                    <input
+                      type="text"
+                      className="w-full px-2.5 py-1.5 border border-border rounded-md text-xs bg-background disabled:opacity-75 disabled:bg-secondary/20"
+                      value={formData.name || ''}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      disabled={!!selectedGeneralProductId}
+                      placeholder="Salchicha"
+                    />
+                  </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="block text-[10px] font-semibold text-foreground mb-0.5">Categoría</label>
+                    <input
+                      type="text"
+                      className="w-full px-2.5 py-1.5 border border-border rounded-md text-xs bg-background disabled:opacity-75 disabled:bg-secondary/20"
+                      value={formData.category || ''}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      disabled={!!selectedGeneralProductId}
+                      placeholder="Embutidos"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-[10px] font-bold text-primary mb-0.5">Cantidad</label>
+                    <input
+                      type="number"
+                      className="w-full px-2.5 py-1.5 border-2 border-primary/20 rounded-md text-xs bg-background focus:border-primary focus:ring-0"
+                      value={formData.stock ?? ''}
+                      onChange={(e) => setFormData({ ...formData, stock: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-foreground mb-0.5">Unidad</label>
+                    <input
+                      type="text"
+                      className="w-full px-2.5 py-1.5 border border-border rounded-md text-xs bg-background disabled:opacity-75 disabled:bg-secondary/20"
+                      value={formData.unit || ''}
+                      onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                      disabled={!!selectedGeneralProductId}
+                      placeholder="Unidades"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-semibold text-foreground mb-0.5">Stock Mín.</label>
+                    <input
+                      type="number"
+                      className="w-full px-2.5 py-1.5 border border-border rounded-md text-xs bg-background"
+                      value={formData.minStock ?? ''}
+                      onChange={(e) => setFormData({ ...formData, minStock: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-foreground mb-0.5">Precio</label>
+                    <input
+                      type="number"
+                      className="w-full px-2.5 py-1.5 border border-border rounded-md text-xs bg-background disabled:opacity-75 disabled:bg-secondary/20"
+                      value={formData.price ?? ''}
+                      onChange={(e) => setFormData({ ...formData, price: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
+                      disabled={!!selectedGeneralProductId}
+                      placeholder="0"
+                    />
+                  </div>
+
+                  <div className="col-span-2">
+                    <label className="block text-[10px] font-semibold text-foreground mb-0.5">Estado</label>
+                    <select
+                      className="w-full px-2.5 py-1.5 border border-border rounded-md text-xs bg-background disabled:opacity-75 disabled:bg-secondary/20"
+                      value={formData.status || 'available'}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as Product['status'] })}
+                      disabled={!!selectedGeneralProductId}
+                    >
+                      <option value="available">Disponible</option>
+                      <option value="low">Bajo Stock</option>
+                      <option value="medium">Medio</option>
+                      <option value="out">Agotado</option>
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Categoría</label>
-                  <input
-                    type="text"
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
-                     disabled={!!selectedGeneralProductId}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Cantidad a Agregar</label>
-                  <input
-                    type="number"
-                    value={formData.stock}
-                    onChange={(e) => setFormData({ ...formData, stock: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Unidad</label>
-                  <input
-                    type="text"
-                    value={formData.unit}
-                    onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                    className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
-                    disabled={!!selectedGeneralProductId}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Stock Mínimo (Local)</label>
-                  <input
-                    type="number"
-                    value={formData.minStock}
-                    onChange={(e) => setFormData({ ...formData, minStock: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Precio</label>
-                  <input
-                    type="number"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
-                    disabled={!!selectedGeneralProductId}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Estado</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value as Product['status'] })}
-                    className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
-                     disabled={!!selectedGeneralProductId}
-                  >
-                    <option value="available">Disponible</option>
-                    <option value="low">Bajo Stock</option>
-                    <option value="medium">Medio</option>
-                    <option value="out">Agotado</option>
-                  </select>
+                
+                <div className="pt-2 border-t border-border">
+                  <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Foto</label>
+                  {selectedGeneralProductId && imagePreview ? (
+                    // Mostrar imagen del producto seleccionado (no editable)
+                    <div className="flex items-center gap-2.5 p-2.5 bg-secondary/30 rounded-md border border-border/50">
+                      <div className="relative w-16 h-16 rounded-md overflow-hidden border-2 border-primary/20 bg-secondary/50 flex-shrink-0">
+                        <img src={imagePreview} alt="Producto" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] text-muted-foreground">Imagen del inventario general</p>
+                        <p className="text-xs font-medium text-foreground truncate">{formData.name}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    // Permitir subir imagen solo si no hay producto seleccionado
+                    <div className="flex items-center gap-2.5">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        ref={fileInputRef}
+                        onChange={handleImageChange}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex-1 px-2.5 py-1.5 border border-dashed border-border rounded-md text-xs font-medium hover:bg-secondary transition-all flex items-center justify-center gap-1.5 group"
+                      >
+                        <Plus className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary" /> 
+                        <span className="text-muted-foreground group-hover:text-foreground">Subir Foto</span>
+                      </button>
+                      {imagePreview && (
+                        <div className="relative w-12 h-12 rounded-md overflow-hidden border-2 border-primary/20 bg-secondary/50 flex-shrink-0">
+                          <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                          <button 
+                            onClick={() => setImagePreview(null)}
+                            className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 shadow-md hover:scale-110 transition-transform"
+                          >
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="flex justify-end gap-2 mt-6">
+
+              <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-border">
                 <button
                   onClick={handleCloseForm}
-                  className="px-4 py-2 bg-secondary text-foreground rounded-lg text-sm hover:bg-secondary/80 transition-colors"
+                  className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary rounded-md transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={editingProduct ? handleUpdateProduct : handleAddProduct}
-                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm hover:bg-primary/90 transition-colors flex items-center gap-2"
+                  className="px-4 py-1.5 bg-orange-600 text-white text-xs font-bold rounded-md hover:bg-orange-700 transition-all shadow-md active:scale-95 flex items-center gap-1.5"
                 >
-                  <Save className="w-4 h-4" />
+                  <Save className="w-3.5 h-3.5" />
                   {editingProduct ? 'Actualizar' : 'Agregar'}
                 </button>
               </div>

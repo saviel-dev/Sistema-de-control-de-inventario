@@ -27,6 +27,9 @@ const InventarioGeneral = () => {
   const { rate, lastUpdated, convert, formatBs, isLoading: isLoadingRate } = useExchangeRate();
   const { products, addProduct } = useProduct();
   const [searchTerm, setSearchTerm] = useState('');
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards');
@@ -35,18 +38,15 @@ const InventarioGeneral = () => {
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
     name: '',
     category: '',
-    stock: 0,
     unit: 'Unidades',
-    minStock: 0,
-    price: 0,
     status: 'available'
   });
 
   const categories = ['all', ...new Set(products.map(p => p.category))];
 
   const handleAddProduct = () => {
-    if (!newProduct.name || !newProduct.price) {
-      toast.error("Por favor completa los campos requeridos");
+    if (!newProduct.name) {
+      toast.error("El nombre del producto es requerido");
       return;
     }
 
@@ -59,7 +59,7 @@ const InventarioGeneral = () => {
       minStock: newProduct.minStock || 0,
       price: newProduct.price || 0,
       status: 'available',
-      image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop' // Placeholder
+      image: imagePreview || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop'
     };
 
     addProduct(product);
@@ -68,14 +68,24 @@ const InventarioGeneral = () => {
     setNewProduct({
       name: '',
       category: '',
-      stock: 0,
       unit: 'Unidades',
-      minStock: 0,
-      price: 0,
       status: 'available'
     });
+    setImagePreview(null);
     toast.success("Producto agregado correctamente");
   };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -419,6 +429,7 @@ const InventarioGeneral = () => {
                 value={newProduct.name}
                 onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
                 className="col-span-3"
+                placeholder='salchicha polaca, cebolla, etc'
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -430,6 +441,7 @@ const InventarioGeneral = () => {
                 value={newProduct.category}
                 onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
                 className="col-span-3"
+                placeholder='salsas, bebidas, etc'
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -439,8 +451,9 @@ const InventarioGeneral = () => {
               <Input
                 id="price"
                 type="number"
-                value={newProduct.price}
-                onChange={(e) => setNewProduct({ ...newProduct, price: parseFloat(e.target.value) })}
+                placeholder="0"
+                value={newProduct.price ?? ''}
+                onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
                 className="col-span-3"
               />
             </div>
@@ -451,8 +464,9 @@ const InventarioGeneral = () => {
               <Input
                 id="stock"
                 type="number"
-                value={newProduct.stock}
-                onChange={(e) => setNewProduct({ ...newProduct, stock: parseFloat(e.target.value) })}
+                placeholder="0"
+                value={newProduct.stock ?? ''}
+                onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
                 className="col-span-3"
               />
             </div>
@@ -480,10 +494,39 @@ const InventarioGeneral = () => {
               <Input
                 id="minStock"
                 type="number"
-                value={newProduct.minStock}
-                onChange={(e) => setNewProduct({ ...newProduct, minStock: parseFloat(e.target.value) })}
+                placeholder="0"
+                value={newProduct.minStock ?? ''}
+                onChange={(e) => setNewProduct({ ...newProduct, minStock: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
                 className="col-span-3"
               />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="image" className="text-right">
+                Foto
+              </Label>
+              <div className="col-span-3 flex items-center gap-4">
+                <Input
+                  id="image"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full flex items-center gap-2"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Plus className="w-4 h-4" /> Seleccionar Imagen
+                </Button>
+                {imagePreview && (
+                  <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-border">
+                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <DialogFooter>
