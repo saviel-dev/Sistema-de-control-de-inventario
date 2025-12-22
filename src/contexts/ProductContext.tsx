@@ -162,7 +162,10 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setError(null);
       const product = products.find(p => p.id === id);
       await inventarioGeneralService.eliminar(id);
+      
+      // Update local state immediately
       setProducts(products.filter(p => p.id !== id));
+      
       toast.success(`Producto "${product?.name || 'desconocido'}" eliminado exitosamente`);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Error al eliminar producto';

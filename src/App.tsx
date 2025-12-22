@@ -25,14 +25,14 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <ExchangeRateProvider>
-          <ProductProvider>
-            <LocationProvider>
-              <DetailedInventoryProvider>
-                <MovementsProvider>
-                  <ReportsProvider>
-                    <SettingsProvider>
-                      <NotificationProvider>
+        <SettingsProvider>
+          <NotificationProvider>
+            <ExchangeRateProvider>
+              <ProductProvider>
+                <LocationProvider>
+                  <DetailedInventoryProvider>
+                    <MovementsProvider>
+                      <ReportsProvider>
                         <DashboardProvider>
                           <Router>
                           <Toaster position="top-right" richColors />
@@ -53,14 +53,14 @@ function App() {
                           </Routes>
                           </Router>
                         </DashboardProvider>
-                      </NotificationProvider>
-                    </SettingsProvider>
-                  </ReportsProvider>
-                </MovementsProvider>
-              </DetailedInventoryProvider>
-            </LocationProvider>
-          </ProductProvider>
-        </ExchangeRateProvider>
+                      </ReportsProvider>
+                    </MovementsProvider>
+                  </DetailedInventoryProvider>
+                </LocationProvider>
+              </ProductProvider>
+            </ExchangeRateProvider>
+          </NotificationProvider>
+        </SettingsProvider>
       </AuthProvider>
     </ThemeProvider>
   );

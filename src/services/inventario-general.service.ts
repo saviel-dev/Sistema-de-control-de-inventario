@@ -6,7 +6,7 @@ import type { InventarioGeneral, InsertInventarioGeneral, UpdateInventarioGenera
  * Inventario centralizado de todos los productos disponibles
  */
 class InventarioGeneralService {
-  private readonly tabla = 'inventario_general';
+  private readonly tabla = 'inventario_general' as const;
 
   /**
    * Obtener todos los productos del inventario general
@@ -210,11 +210,14 @@ class InventarioGeneralService {
   /**
    * Eliminar un producto (soft delete)
    */
+  /**
+   * Eliminar un producto permanentemente
+   */
   async eliminar(id: string): Promise<void> {
     try {
       const { error } = await supabase
         .from(this.tabla)
-        .update({ activo: false })
+        .delete()
         .eq('id', id);
 
       if (error) throw error;

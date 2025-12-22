@@ -5,6 +5,7 @@ import { movimientosService } from '@/services/movimientos.service';
 import type { InventarioDetallado } from '@/types/database.types';
 import { toast } from 'sonner';
 import { Product } from '@/contexts/ProductContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 interface DetailedInventoryContextType {
   getProductsByLocation: (locationId: string) => Product[];
@@ -72,6 +73,7 @@ export const DetailedInventoryProvider: React.FC<{ children: React.ReactNode }> 
   const [productCounts, setProductCounts] = useState<Record<string, number>>({});
   const [loadingByLocation, setLoadingByLocation] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
+  const { addNotification } = useNotifications();
 
   // Cargar conteos globales al iniciar
   useEffect(() => {
@@ -233,6 +235,13 @@ export const DetailedInventoryProvider: React.FC<{ children: React.ReactNode }> 
       }));
 
       toast.success(`Producto "${generalProduct.nombre}" transferido exitosamente`);
+      
+      // Notificar transferencia
+      await addNotification(
+        'Transferencia Exitosa', 
+        `Se han transferido ${quantity} ${generalProduct.unidad} de "${generalProduct.nombre}" al inventario detallado.`, 
+        'info'
+      );
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Error al transferir producto';
       setError(errorMsg);

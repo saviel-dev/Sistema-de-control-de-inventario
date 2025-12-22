@@ -172,13 +172,13 @@ class InventarioDetalladoService {
   }
 
   /**
-   * Eliminar un producto (soft delete)
+   * Eliminar un producto permanentemente
    */
   async eliminar(id: string): Promise<void> {
     try {
-      const { error } = await (supabase
-        .from('inventario_detallado') as any)
-        .update({ activo: false })
+      const { error } = await supabase
+        .from(this.tabla)
+        .delete()
         .eq('id', id);
 
       if (error) throw error;
