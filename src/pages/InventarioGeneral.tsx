@@ -65,6 +65,7 @@ const InventarioGeneral = () => {
   
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
@@ -419,17 +420,7 @@ const InventarioGeneral = () => {
                           </button>
                           <button
                             onClick={() => {
-                              toast("¿Estás seguro?", {
-                                description: "Esta acción no se puede deshacer.",
-                                action: {
-                                  label: "Eliminar",
-                                  onClick: () => deleteProduct(product.id),
-                                },
-                                cancel: {
-                                  label: "Cancelar",
-                                  onClick: () => {},
-                                },
-                              });
+                              setProductToDelete(product.id);
                             }}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Eliminar"
@@ -485,10 +476,10 @@ const InventarioGeneral = () => {
               {paginatedProducts.map((product) => (
                 <div  
                   key={product.id} 
-                  className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 group relative"
+                  className="bg-card border border-border rounded-xl hover:shadow-lg transition-all duration-300 group relative"
                 >
                   {/* Product Image */}
-                  <div className="relative h-32 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                  <div className="relative h-32 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden rounded-t-xl">
                     {product.image ? (
                       <img 
                         src={product.image} 
@@ -506,7 +497,7 @@ const InventarioGeneral = () => {
                   <div className="absolute top-3 right-3 z-10">
                     <button 
                       onClick={() => setOpenDropdown(openDropdown === product.id ? null : product.id)}
-                      className="p-2 bg-white/90 backdrop-blur-sm rounded-lg text-foreground hover:bg-white transition-colors shadow-md"
+                      className="p-2 bg-background/90 backdrop-blur-sm rounded-lg text-foreground hover:bg-background transition-colors shadow-md"
                     >
                       <MoreVertical className="w-4 h-4" />
                     </button>
@@ -518,7 +509,7 @@ const InventarioGeneral = () => {
                           className="fixed inset-0 z-10" 
                           onClick={() => setOpenDropdown(null)}
                         />
-                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-border z-20 overflow-hidden">
+                        <div className="absolute right-0 mt-2 w-48 bg-popover text-popover-foreground rounded-lg shadow-lg border border-border z-20 overflow-hidden">
                           <button
                               onClick={() => {
                               handleViewDetails(product);
@@ -542,19 +533,9 @@ const InventarioGeneral = () => {
                           <button
                             onClick={() => {
                               setOpenDropdown(null);
-                              toast("¿Estás seguro?", {
-                                description: "Esta acción no se puede deshacer.",
-                                action: {
-                                  label: "Eliminar",
-                                  onClick: () => deleteProduct(product.id),
-                                },
-                                cancel: {
-                                  label: "Cancelar",
-                                  onClick: () => {},
-                                },
-                              });
+                              setProductToDelete(product.id);
                             }}
-                            className="w-full px-4 py-2.5 text-left text-sm hover:bg-destructive/10 text-destructive transition-colors flex items-center gap-3 border-t border-border"
+                            className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 dark:hover:bg-red-900/10 text-red-600 dark:text-red-400 transition-colors flex items-center gap-3 border-t border-border"
                           >
                             <Trash2 className="w-4 h-4" />
                             <span>Eliminar</span>
@@ -693,7 +674,11 @@ const InventarioGeneral = () => {
                   min={1}
                   placeholder="0"
                   value={newProduct.price ?? ''}
-                  onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    if (val < 0) return;
+                    setNewProduct({ ...newProduct, price: e.target.value === '' ? undefined : val });
+                  }}
                 />
               </div>
               <div className="space-y-2">
@@ -701,9 +686,14 @@ const InventarioGeneral = () => {
                 <Input
                   id="stock"
                   type="number"
+                  min={1}
                   placeholder="0"
                   value={newProduct.stock ?? ''}
-                  onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    if (val < 0) return;
+                    setNewProduct({ ...newProduct, stock: e.target.value === '' ? undefined : val });
+                  }}
                 />
               </div>
             </div>
@@ -729,9 +719,14 @@ const InventarioGeneral = () => {
                 <Input
                   id="minStock"
                   type="number"
+                  min={1}
                   placeholder="0"
                   value={newProduct.minStock ?? ''}
-                  onChange={(e) => setNewProduct({ ...newProduct, minStock: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    if (val < 0) return;
+                    setNewProduct({ ...newProduct, minStock: e.target.value === '' ? undefined : val });
+                  }}
                 />
               </div>
             </div>
@@ -766,6 +761,34 @@ const InventarioGeneral = () => {
           <DialogFooter>
             <Button type="button" variant="secondary" onClick={() => setIsAddProductOpen(false)}>Cancelar</Button>
             <Button type="submit" onClick={handleAddProduct}>Guardar Producto</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Confirmar eliminación</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setProductToDelete(null)}>
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => {
+                if (productToDelete) {
+                  deleteProduct(productToDelete);
+                  setProductToDelete(null);
+                  toast.success("Producto eliminado correctamente");
+                }
+              }}
+            >
+              Eliminar
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -807,7 +830,11 @@ const InventarioGeneral = () => {
                   type="number"
                   min={1}
                   value={editingProduct?.price || ''}
-                  onChange={(e) => setEditingProduct(prev => prev ? { ...prev, price: parseFloat(e.target.value) } : null)}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    if (val < 0) return;
+                    setEditingProduct(prev => prev ? { ...prev, price: e.target.value === '' ? undefined : val } : null);
+                  }}
                 />
               </div>
               <div className="space-y-2">
@@ -815,8 +842,13 @@ const InventarioGeneral = () => {
                 <Input
                   id="edit-stock"
                   type="number"
+                  min={1}
                   value={editingProduct?.stock || ''}
-                  onChange={(e) => setEditingProduct(prev => prev ? { ...prev, stock: parseFloat(e.target.value) } : null)}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    if (val < 0) return;
+                    setEditingProduct(prev => prev ? { ...prev, stock: e.target.value === '' ? undefined : val } : null);
+                  }}
                 />
               </div>
             </div>
@@ -845,8 +877,13 @@ const InventarioGeneral = () => {
                 <Input
                   id="edit-minStock"
                   type="number"
+                  min={1}
                   value={editingProduct?.minStock || ''}
-                  onChange={(e) => setEditingProduct(prev => prev ? { ...prev, minStock: parseFloat(e.target.value) } : null)}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    if (val < 0) return;
+                    setEditingProduct(prev => prev ? { ...prev, minStock: e.target.value === '' ? undefined : val } : null);
+                  }}
                 />
               </div>
             </div>

@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import PageTransition from '@/components/layout/PageTransition';
 import { useState, useEffect, useRef } from 'react';
 import { useExchangeRate } from '@/contexts/ExchangeRateContext';
@@ -64,6 +65,7 @@ const InventarioDetallado = () => {
   // New state for selecting from general inventory
   const [selectedGeneralProductId, setSelectedGeneralProductId] = useState<string>('');
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -536,9 +538,9 @@ const InventarioDetallado = () => {
                     <label className="block text-[10px] font-semibold text-foreground mb-0.5">Nombre</label>
                     <input
                       type="text"
-                      className="w-full px-2.5 py-1.5 border border-border rounded-md text-xs bg-secondary/20 cursor-not-allowed"
+                      className={`w-full px-2.5 py-1.5 border border-border rounded-md text-xs bg-background ${!editingProduct ? 'bg-secondary/20 cursor-not-allowed' : ''}`}
                       value={formData.name || ''}
-                      readOnly
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       disabled={!editingProduct}
                       placeholder="Salchicha"
                     />
@@ -547,9 +549,9 @@ const InventarioDetallado = () => {
                     <label className="block text-[10px] font-semibold text-foreground mb-0.5">Categoría</label>
                     <input
                       type="text"
-                      className="w-full px-2.5 py-1.5 border border-border rounded-md text-xs bg-secondary/20 cursor-not-allowed"
+                      className={`w-full px-2.5 py-1.5 border border-border rounded-md text-xs bg-background ${!editingProduct ? 'bg-secondary/20 cursor-not-allowed' : ''}`}
                       value={formData.category || ''}
-                      readOnly
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       disabled={!editingProduct}
                       placeholder="Embutidos"
                     />
@@ -559,9 +561,14 @@ const InventarioDetallado = () => {
                     <label className="block text-[10px] font-bold text-primary mb-0.5">Cantidad</label>
                     <input
                       type="number"
+                      min={1}
                       className={`w-full px-2.5 py-1.5 border-2 border-primary/20 rounded-md text-xs bg-background focus:border-primary focus:ring-0 ${(!editingProduct && !selectedGeneralProductId) ? 'bg-secondary/20 cursor-not-allowed opacity-50' : ''}`}
                       value={formData.stock ?? ''}
-                      onChange={(e) => setFormData({ ...formData, stock: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        if (val < 1 && e.target.value !== '') return;
+                        setFormData({ ...formData, stock: e.target.value === '' ? undefined : val });
+                      }}
                       disabled={!editingProduct && !selectedGeneralProductId}
                       placeholder="0"
                     />
@@ -570,9 +577,9 @@ const InventarioDetallado = () => {
                     <label className="block text-[10px] font-semibold text-foreground mb-0.5">Unidad</label>
                     <input
                       type="text"
-                      className="w-full px-2.5 py-1.5 border border-border rounded-md text-xs bg-secondary/20 cursor-not-allowed"
+                      className={`w-full px-2.5 py-1.5 border border-border rounded-md text-xs bg-background ${!editingProduct ? 'bg-secondary/20 cursor-not-allowed' : ''}`}
                       value={formData.unit || ''}
-                      readOnly
+                      onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                       disabled={!editingProduct}
                       placeholder="Unidades"
                     />
@@ -582,9 +589,14 @@ const InventarioDetallado = () => {
                     <label className="block text-[10px] font-semibold text-foreground mb-0.5">Stock Mín.</label>
                     <input
                       type="number"
+                      min={1}
                       className={`w-full px-2.5 py-1.5 border border-border rounded-md text-xs bg-background ${(!editingProduct && !selectedGeneralProductId) ? 'bg-secondary/20 cursor-not-allowed opacity-50' : ''}`}
                       value={formData.minStock ?? ''}
-                      onChange={(e) => setFormData({ ...formData, minStock: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        if (val < 1 && e.target.value !== '') return;
+                        setFormData({ ...formData, minStock: e.target.value === '' ? undefined : val });
+                      }}
                       disabled={!editingProduct && !selectedGeneralProductId}
                       placeholder="0"
                     />
@@ -593,10 +605,14 @@ const InventarioDetallado = () => {
                     <label className="block text-[10px] font-semibold text-foreground mb-0.5">Precio</label>
                     <input
                       type="number"
-                      className="w-full px-2.5 py-1.5 border border-border rounded-md text-xs bg-secondary/20 cursor-not-allowed"
+                      className={`w-full px-2.5 py-1.5 border border-border rounded-md text-xs bg-background ${(!editingProduct && !selectedGeneralProductId) ? 'bg-secondary/20 cursor-not-allowed opacity-50' : ''}`}
                       value={formData.price ?? ''}
-                      readOnly
-                      disabled={!editingProduct}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        if (val < 1 && e.target.value !== '') return;
+                        setFormData({ ...formData, price: e.target.value === '' ? undefined : val });
+                      }}
+                      disabled={!editingProduct && !selectedGeneralProductId}
                       placeholder="0"
                     />
                   </div>
@@ -748,8 +764,10 @@ const InventarioDetallado = () => {
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleDeleteProduct(product.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            onClick={() => {
+                              setProductToDelete(product.id);
+                            }}
+                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-colors"
                             title="Eliminar"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -809,10 +827,10 @@ const InventarioDetallado = () => {
               {paginatedProducts.map((product) => (
                 <div 
                   key={product.id} 
-                  className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 group relative"
+                  className="bg-card border border-border rounded-xl hover:shadow-lg transition-all duration-300 group relative"
                 >
                   {/* Product Image */}
-                  <div className="relative h-32 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                  <div className="relative h-32 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden rounded-t-xl">
                     {product.image ? (
                       <img 
                         src={product.image} 
@@ -830,7 +848,7 @@ const InventarioDetallado = () => {
                   <div className="absolute top-3 right-3 z-10">
                     <button 
                       onClick={() => setOpenDropdown(openDropdown === product.id ? null : product.id)}
-                      className="p-2 bg-white/90 backdrop-blur-sm rounded-lg text-foreground hover:bg-white transition-colors shadow-md"
+                      className="p-2 bg-background/90 backdrop-blur-sm rounded-lg text-foreground hover:bg-accent transition-colors shadow-md"
                     >
                       <MoreVertical className="w-4 h-4 cancel-drag" />
                     </button>
@@ -839,12 +857,16 @@ const InventarioDetallado = () => {
                     {openDropdown === product.id && (
                       <>
                         <div 
-                          className="fixed inset-0 z-10" 
-                          onClick={() => setOpenDropdown(null)}
+                          className="fixed inset-0 z-40" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenDropdown(null);
+                          }}
                         />
-                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-border z-20 overflow-hidden">
+                        <div className="absolute right-0 mt-2 w-48 bg-popover text-popover-foreground rounded-lg shadow-lg border border-border z-50 overflow-hidden">
                           <button
-                             onClick={() => {
+                             onClick={(e) => {
+                               e.stopPropagation();
                               setViewingProduct(product);
                               setOpenDropdown(null);
                             }}
@@ -854,7 +876,8 @@ const InventarioDetallado = () => {
                             <span>Ver detalles</span>
                           </button>
                           <button
-                            onClick={() => {
+                             onClick={(e) => {
+                               e.stopPropagation();
                               handleEditProduct(product);
                               setOpenDropdown(null);
                             }}
@@ -864,11 +887,12 @@ const InventarioDetallado = () => {
                             <span>Editar</span>
                           </button>
                           <button
-                            onClick={() => {
+                             onClick={(e) => {
+                               e.stopPropagation();
                               setOpenDropdown(null);
-                              handleDeleteProduct(product.id);
+                              setProductToDelete(product.id);
                             }}
-                            className="w-full px-4 py-2.5 text-left text-sm hover:bg-destructive/10 text-destructive transition-colors flex items-center gap-3 border-t border-border"
+                            className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 dark:hover:bg-red-900/10 text-red-600 dark:text-red-400 transition-colors flex items-center gap-3 border-t border-border"
                           >
                             <Trash2 className="w-4 h-4" />
                             <span>Eliminar</span>
@@ -1070,11 +1094,55 @@ const InventarioDetallado = () => {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog 
+          open={!!productToDelete} 
+          onOpenChange={(open) => {
+            if (!open) setProductToDelete(null);
+          }}
+        >
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Confirmar eliminación</DialogTitle>
+              <DialogDescription>
+                ¿Estás seguro de que deseas eliminar el producto <strong>{currentProducts.find(p => p.id === productToDelete)?.name}</strong>? Esta acción no se puede deshacer.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setProductToDelete(null)}>
+                Cancelar
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={async () => {
+                  if (productToDelete && selectedLocation) {
+                    try {
+                      await deleteDetailedProduct(selectedLocation, productToDelete);
+                      toast.success("Producto eliminado correctamente");
+                    } catch (error) {
+                      toast.error("Error al eliminar el producto");
+                    } finally {
+                      setProductToDelete(null);
+                    }
+                  } else {
+                    toast.error("No se pudo identificar el producto o la ubicación");
+                  }
+                }}
+              >
+                Eliminar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </PageTransition>
     );
   }
 
+
+
   return (
+    <>
     <PageTransition>
       <div className="space-y-6">
       {/* Filters y botón agregar */}
@@ -1273,7 +1341,47 @@ const InventarioDetallado = () => {
         </div>
       )}
     </div>
+      <Dialog 
+        open={!!productToDelete} 
+        onOpenChange={(open) => {
+          if (!open) setProductToDelete(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Confirmar eliminación</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que deseas eliminar el producto <strong>{currentProducts.find(p => p.id === productToDelete)?.name}</strong>? Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setProductToDelete(null)}>
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={async () => {
+                if (productToDelete && selectedLocation) {
+                  try {
+                    await deleteDetailedProduct(selectedLocation, productToDelete);
+                    toast.success("Producto eliminado correctamente");
+                  } catch (error) {
+                    toast.error("Error al eliminar el producto");
+                  } finally {
+                    setProductToDelete(null);
+                  }
+                } else {
+                  toast.error("No se pudo identificar el producto o la ubicación");
+                }
+              }}
+            >
+              Eliminar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </PageTransition>
+    </>
   );
 };
 
