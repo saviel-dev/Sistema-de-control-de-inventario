@@ -94,43 +94,52 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'notificaciones',
-          filter: `usuario_id=eq.${user.id}`, // Solo notificaciones para este usuario
         },
         payload => {
-          const newNotification = payload.new as Notificacion;
-          
-          // Actualizar estado local
-          setNotifications(prev => [newNotification, ...prev]);
-          
-          const allowed = shouldPlaySound(newNotification.titulo, newNotification.mensaje);
+          console.log('Realtime payload:', payload);
 
-          if (allowed) {
-            // Reproducir sonido
-            audio.currentTime = 0;
-            audio.play().catch(e => console.error('Error playing sound:', e));
+          if (payload.eventType === 'INSERT') {
+            const newNotification = payload.new as Notificacion;
+            
+            // Actualizar estado local
+            setNotifications(prev => [newNotification, ...prev]);
+            
+            const allowed = shouldPlaySound(newNotification.titulo, newNotification.mensaje);
 
-            // Mostrar toast
-            toast(newNotification.titulo, {
-              description: newNotification.mensaje,
-            });
+            if (allowed) {
+              // Reproducir sonido
+              audio.currentTime = 0;
+              audio.play().catch(e => console.error('Error playing sound:', e));
 
-            // Enviar notificación del sistema (celular/desktop)
-            if ('Notification' in window && Notification.permission === 'granted') {
-              try {
-                // Registrar Service Worker para notificaciones móviles mas robustas si es necesario,
-                // pero new Notification() funciona bien en apps activas/pwa
-                new Notification(newNotification.titulo, {
-                  body: newNotification.mensaje,
-                  icon: '/icon-192x192.png', // Asegúrate de tener un icono o usar uno por defecto
-                  tag: 'auto-eat-notification'
-                });
-              } catch (e) {
-                console.error('Error sending system notification:', e);
+              // Mostrar toast
+              toast(newNotification.titulo, {
+                description: newNotification.mensaje,
+              });
+
+              // Enviar notificación del sistema
+              if ('Notification' in window && Notification.permission === 'granted') {
+                try {
+                  new Notification(newNotification.titulo, {
+                    body: newNotification.mensaje,
+                    icon: '/icon-192x192.png',
+                    tag: 'auto-eat-notification'
+                  });
+                } catch (e) {
+                  console.error('Error sending system notification:', e);
+                }
               }
             }
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedNotification = payload.new as Notificacion;
+            setNotifications(prev => 
+              prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
+            );
+          } else if (payload.eventType === 'DELETE') {
+            const deletedId = payload.old.id;
+            setNotifications(prev => prev.filter(n => n.id !== deletedId));
           }
         }
       )

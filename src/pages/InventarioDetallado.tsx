@@ -127,6 +127,15 @@ const InventarioDetallado = () => {
   const handleAddProduct = async () => {
     if (!selectedLocation) return;
     
+    if ((formData.stock || 0) <= 0) {
+      toast.error("La cantidad debe ser mayor a 0");
+      return;
+    }
+    if ((formData.minStock || 0) <= 0) {
+      toast.error("El stock mínimo debe ser mayor a 0");
+      return;
+    }
+
     try {
       // Logic for adding from General Inventory
       if (selectedGeneralProductId) {

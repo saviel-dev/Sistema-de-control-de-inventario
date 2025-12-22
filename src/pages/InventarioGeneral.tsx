@@ -78,6 +78,15 @@ const InventarioGeneral = () => {
   const handleUpdateProduct = async () => {
     if (!editingProduct || !editingProduct.name) return;
     
+    if ((editingProduct.stock || 0) <= 0) {
+      toast.error("La cantidad debe ser mayor a 0");
+      return;
+    }
+    if ((editingProduct.minStock || 0) <= 0) {
+      toast.error("El stock mínimo debe ser mayor a 0");
+      return;
+    }
+
     try {
       await updateProduct({
         ...editingProduct,
@@ -88,6 +97,8 @@ const InventarioGeneral = () => {
     } catch (error) {
       console.error('Error al actualizar:', error);
     }
+
+
   };
 
   const categories = ['all', ...new Set(products.map(p => p.category))];
@@ -95,6 +106,15 @@ const InventarioGeneral = () => {
   const handleAddProduct = async () => {
     if (!newProduct.name) {
       toast.error("El nombre del producto es requerido");
+      return;
+    }
+
+    if ((newProduct.stock || 0) <= 0) {
+      toast.error("La cantidad debe ser mayor a 0");
+      return;
+    }
+    if ((newProduct.minStock || 0) <= 0) {
+      toast.error("El stock mínimo debe ser mayor a 0");
       return;
     }
 
@@ -629,97 +649,87 @@ const InventarioGeneral = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Nombre
-              </Label>
-              <Input
-                id="name"
-                value={newProduct.name}
-                onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                className="col-span-3"
-                placeholder='salchicha polaca, cebolla, etc'
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Nombre</Label>
+                <Input
+                  id="name"
+                  value={newProduct.name}
+                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                  placeholder='salchicha polaca, cebolla'
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="category">Categoría</Label>
+                <Input
+                  id="category"
+                  value={newProduct.category}
+                  onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+                  placeholder='salsas, bebidas'
+                  list="category-suggestions"
+                />
+                <datalist id="category-suggestions">
+                  {categories.filter(c => c !== 'all').map(cat => (
+                    <option key={cat} value={cat} />
+                  ))}
+                </datalist>
+              </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="category" className="text-right">
-                Categoría
-              </Label>
-              <Input
-                id="category"
-                value={newProduct.category}
-                onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-                className="col-span-3"
-                placeholder='salsas, bebidas, etc'
-                list="category-suggestions"
-              />
-              <datalist id="category-suggestions">
-                {categories.filter(c => c !== 'all').map(cat => (
-                  <option key={cat} value={cat} />
-                ))}
-              </datalist>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="price">Precio ($)</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  placeholder="0"
+                  value={newProduct.price ?? ''}
+                  onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="stock">Stock</Label>
+                <Input
+                  id="stock"
+                  type="number"
+                  placeholder="0"
+                  value={newProduct.stock ?? ''}
+                  onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
+                />
+              </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="price" className="text-right">
-                Precio ($)
-              </Label>
-              <Input
-                id="price"
-                type="number"
-                placeholder="0"
-                value={newProduct.price ?? ''}
-                onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
-                className="col-span-3"
-              />
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="unit">Unidad</Label>
+                <Select onValueChange={(val) => setNewProduct({ ...newProduct, unit: val })} defaultValue={newProduct.unit}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una unidad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Unidades">Unidades</SelectItem>
+                    <SelectItem value="Kg">Kg</SelectItem>
+                    <SelectItem value="Litros">Litros</SelectItem>
+                    <SelectItem value="Paquetes">Paquetes</SelectItem>
+                    <SelectItem value="Bolsas">Bolsas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="minStock">Min. Stock</Label>
+                <Input
+                  id="minStock"
+                  type="number"
+                  placeholder="0"
+                  value={newProduct.minStock ?? ''}
+                  onChange={(e) => setNewProduct({ ...newProduct, minStock: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
+                />
+              </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="stock" className="text-right">
-                Stock
-              </Label>
-              <Input
-                id="stock"
-                type="number"
-                placeholder="0"
-                value={newProduct.stock ?? ''}
-                onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="unit" className="text-right">
-                Unidad
-              </Label>
-               <Select onValueChange={(val) => setNewProduct({ ...newProduct, unit: val })} defaultValue={newProduct.unit}>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Selecciona una unidad" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Unidades">Unidades</SelectItem>
-                  <SelectItem value="Kg">Kg</SelectItem>
-                  <SelectItem value="Litros">Litros</SelectItem>
-                  <SelectItem value="Paquetes">Paquetes</SelectItem>
-                  <SelectItem value="Bolsas">Bolsas</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="minStock" className="text-right">
-                Min. Stock
-              </Label>
-              <Input
-                id="minStock"
-                type="number"
-                placeholder="0"
-                value={newProduct.minStock ?? ''}
-                onChange={(e) => setNewProduct({ ...newProduct, minStock: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="image" className="text-right">
-                Foto
-              </Label>
-              <div className="col-span-3 flex items-center gap-4">
+
+            <div className="space-y-2">
+              <Label htmlFor="image">Foto</Label>
+              <div className="flex items-center gap-4">
                 <Input
                   id="image"
                   type="file"
@@ -760,91 +770,93 @@ const InventarioGeneral = () => {
           </DialogHeader>
           <div className="grid gap-4 py-4">
              {/* Fields similar to Add Product but using editingProduct state */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-name" className="text-right">Nombre</Label>
-              <Input
-                id="edit-name"
-                value={editingProduct?.name || ''}
-                onChange={(e) => setEditingProduct(prev => prev ? { ...prev, name: e.target.value } : null)}
-                className="col-span-3"
-              />
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Nombre</Label>
+                <Input
+                  id="edit-name"
+                  value={editingProduct?.name || ''}
+                  onChange={(e) => setEditingProduct(prev => prev ? { ...prev, name: e.target.value } : null)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-category">Categoría</Label>
+                <Input
+                  id="edit-category"
+                  value={editingProduct?.category || ''}
+                  onChange={(e) => setEditingProduct(prev => prev ? { ...prev, category: e.target.value } : null)}
+                />
+              </div>
             </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-category" className="text-right">Categoría</Label>
-              <Input
-                id="edit-category"
-                value={editingProduct?.category || ''}
-                onChange={(e) => setEditingProduct(prev => prev ? { ...prev, category: e.target.value } : null)}
-                className="col-span-3"
-              />
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-price">Precio</Label>
+                <Input
+                  id="edit-price"
+                  type="number"
+                  value={editingProduct?.price || ''}
+                  onChange={(e) => setEditingProduct(prev => prev ? { ...prev, price: parseFloat(e.target.value) } : null)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-stock">Stock</Label>
+                <Input
+                  id="edit-stock"
+                  type="number"
+                  value={editingProduct?.stock || ''}
+                  onChange={(e) => setEditingProduct(prev => prev ? { ...prev, stock: parseFloat(e.target.value) } : null)}
+                />
+              </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-price" className="text-right">Precio</Label>
-              <Input
-                id="edit-price"
-                type="number"
-                value={editingProduct?.price || ''}
-                onChange={(e) => setEditingProduct(prev => prev ? { ...prev, price: parseFloat(e.target.value) } : null)}
-                className="col-span-3"
-              />
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-unit">Unidad</Label>
+                <Select 
+                  value={editingProduct?.unit} 
+                  onValueChange={(val) => setEditingProduct(prev => prev ? { ...prev, unit: val } : null)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una unidad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Unidades">Unidades</SelectItem>
+                    <SelectItem value="Kg">Kg</SelectItem>
+                    <SelectItem value="Litros">Litros</SelectItem>
+                    <SelectItem value="Paquetes">Paquetes</SelectItem>
+                    <SelectItem value="Bolsas">Bolsas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-minStock">Min. Stock</Label>
+                <Input
+                  id="edit-minStock"
+                  type="number"
+                  value={editingProduct?.minStock || ''}
+                  onChange={(e) => setEditingProduct(prev => prev ? { ...prev, minStock: parseFloat(e.target.value) } : null)}
+                />
+              </div>
             </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-stock" className="text-right">Stock</Label>
-              <Input
-                id="edit-stock"
-                type="number"
-                value={editingProduct?.stock || ''}
-                onChange={(e) => setEditingProduct(prev => prev ? { ...prev, stock: parseFloat(e.target.value) } : null)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-unit" className="text-right">Unidad</Label>
-               <Select 
-                value={editingProduct?.unit} 
-                onValueChange={(val) => setEditingProduct(prev => prev ? { ...prev, unit: val } : null)}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Selecciona una unidad" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Unidades">Unidades</SelectItem>
-                  <SelectItem value="Kg">Kg</SelectItem>
-                  <SelectItem value="Litros">Litros</SelectItem>
-                  <SelectItem value="Paquetes">Paquetes</SelectItem>
-                  <SelectItem value="Bolsas">Bolsas</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-minStock" className="text-right">Min. Stock</Label>
-              <Input
-                id="edit-minStock"
-                type="number"
-                value={editingProduct?.minStock || ''}
-                onChange={(e) => setEditingProduct(prev => prev ? { ...prev, minStock: parseFloat(e.target.value) } : null)}
-                className="col-span-3"
-              />
-            </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-image" className="text-right">Foto</Label>
-              <div className="col-span-3 flex items-center gap-4">
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-image">Foto</Label>
+              <div className="flex items-center gap-4">
                 <Input
                   id="edit-image"
                   type="file"
                   accept="image/*"
                   className="hidden"
                   onChange={handleImageChange}
+                  ref={fileInputRef}
                 />
                 <Button 
                   type="button" 
                   variant="outline" 
                    className="w-full flex items-center gap-2"
-                   onClick={() => {
-                     // Hack to reuse the same file input handler logic or create a new ref for edit
-                     // For simplicity, we can reuse the same ref if we clear it first
-                     if(fileInputRef.current) fileInputRef.current.click()
-                   }}
+                   onClick={() => fileInputRef.current?.click()}
                 >
                   <Plus className="w-4 h-4" /> Cambiar Imagen
                 </Button>
@@ -855,6 +867,7 @@ const InventarioGeneral = () => {
                 )}
               </div>
             </div>
+          </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="secondary" onClick={() => setEditingProduct(null)}>Cancelar</Button>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNotifications } from '@/contexts/NotificationContext';
 import PageTransition from '@/components/layout/PageTransition';
 import { Bell, Check, CheckCheck, Clock, Info, AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
@@ -8,6 +8,13 @@ import { es } from 'date-fns/locale';
 const Notificaciones = () => {
   const { notifications, unreadCount, markAsRead, markAllAsRead, loading } = useNotifications();
   const [filter, setFilter] = useState<'a ver' | 'todas' | 'no_leidas'>('todas');
+
+  // Marcar todas como leídas automáticamente al entrar
+  useEffect(() => {
+    if (unreadCount > 0) {
+      markAllAsRead();
+    }
+  }, [unreadCount, markAllAsRead]);
 
   const filteredNotifications = notifications.filter(n => {
     if (filter === 'no_leidas') return !n.leida;

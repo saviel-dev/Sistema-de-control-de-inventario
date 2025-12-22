@@ -1,5 +1,6 @@
 import { supabase, handleSupabaseError } from '@/lib/supabase';
 import type { Movimiento, InsertMovimiento } from '@/types/database.types';
+import { notificationService } from '@/services/notification.service';
 
 /**
  * Servicio para gestionar movimientos de inventario
@@ -111,6 +112,10 @@ class MovimientosService {
   /**
    * Registrar un nuevo movimiento
    */
+
+  /**
+   * Registrar un nuevo movimiento
+   */
   async registrar(movimiento: InsertMovimiento): Promise<Movimiento> {
     try {
       const { data, error } = await (supabase
@@ -120,10 +125,67 @@ class MovimientosService {
         .single();
 
       if (error) throw error;
+
+      // Generar notificación en segundo plano
+      this.generarNotificacion(data).catch(e => console.error('Error generando notificación:', e));
+
       return data;
     } catch (error) {
       console.error('Error al registrar movimiento:', error);
       throw new Error(handleSupabaseError(error));
+    }
+  }
+
+  /**
+   * Generar notificación automática para el movimiento
+   */
+  private async generarNotificacion(movimiento: Movimiento): Promise<void> {
+    try {
+      // 1. Obtener nombre del producto
+      const tablaProducto = movimiento.tipo_inventario === 'general' ? 'inventario_general' : 'inventario_detallado';
+      const { data } = await supabase
+        .from(tablaProducto)
+        .select('nombre')
+        .eq('id', movimiento.producto_id)
+        .single();
+
+      // Cast needed because table name is dynamic
+      const producto = data as { nombre: string } | null;
+      const nombreProducto = producto?.nombre || 'Producto desconocido';
+
+      // 2. Construir mensaje
+      const titulo = `Nuevo Movimiento: ${movimiento.tipo.toUpperCase()}`;
+      const mensaje = `Se ha registrado una ${movimiento.tipo} de ${movimiento.cantidad} ${movimiento.unidad} del producto "${nombreProducto}".`;
+
+      // 3. Crear notificación (global para admin/gerentes, o para el usuario actual)
+      // Nota: Si queremos que sea global, podemos no asignar usuario_id o iterar.
+      // Pero el sistema de notificaciones actual requiere un usuario_id en la base de datos (según schema).
+      // Si la UI escucha eventos globales (sin filtro de usuario), entonces "usuario_id" podría ser irrelevante O 
+      // necesitaríamos enviar a todos los usuarios.
+      
+      // Asumiremos que se notifica al usuario que hizo la acción, y el sistema realtime global 
+      // lo propagará a sus otros dispositivos. Si se desea notificar a OTROS usuarios,
+      // se debería implementar una lógica de envío masivo o un canal de "alertas de sistema".
+      // Por ahora, usaremos el usuario_id del movimiento si existe, o el usuario actual.
+      
+      let targetUserId = movimiento.usuario_id;
+      if (!targetUserId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        targetUserId = user?.id;
+      }
+
+      if (targetUserId) {
+         await notificationService.crear({
+          usuario_id: targetUserId,
+          titulo,
+          mensaje,
+          tipo: 'info',
+          leida: false,
+        });
+      }
+
+    } catch (error) {
+      console.error('Error interno generando notificación:', error);
     }
   }
 
