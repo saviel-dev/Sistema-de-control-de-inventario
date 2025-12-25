@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useConfiguracion } from "@/hooks/useConfiguracion";
 import { useNotifications } from "@/contexts/NotificationContext";
+import { useTour } from "@/contexts/TourContext";
 import {
   LayoutDashboard,
   Package,
@@ -16,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Bell,
+  HelpCircle,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -26,26 +28,28 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/inventario-general", icon: Package, label: "Inventario General" },
+  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard", tourId: "dashboard-link" },
+  { to: "/inventario-general", icon: Package, label: "Inventario General", tourId: "inventario-general-link" },
   {
     to: "/inventario-detallado",
     icon: ClipboardList,
     label: "Inventario Detallado",
+    tourId: "inventario-detallado-link"
   },
-  { to: "/movimientos", icon: ArrowLeftRight, label: "Movimientos" },
-  { to: "/reportes", icon: BarChart3, label: "Reportes" },
+  { to: "/movimientos", icon: ArrowLeftRight, label: "Movimientos", tourId: "movimientos-link" },
+  { to: "/reportes", icon: BarChart3, label: "Reportes", tourId: "reportes-link" },
 ];
 
 const systemItems = [
-  { to: "/notificaciones", icon: Bell, label: "Notificaciones", badge: true },
-  { to: "/configuracion", icon: Settings, label: "Configuración" },
+  { to: "/notificaciones", icon: Bell, label: "Notificaciones", badge: true, tourId: "notificaciones-link" },
+  { to: "/configuracion", icon: Settings, label: "Configuración", tourId: "configuracion-link" },
 ];
 
 const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProps) => {
   const { user } = useAuth();
   const { configuracion } = useConfiguracion('sistema.nombre');
   const { unreadCount } = useNotifications();
+  const { startTour } = useTour();
   const [activeTooltip, setActiveTooltip] = useState<{ label: string; top: number; left: number; badge?: number } | null>(null);
 
   const handleMouseEnter = (e: React.MouseEvent, label: string, badge?: number) => {
@@ -75,6 +79,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProp
 
       {/* Sidebar */}
       <aside
+        data-tour="sidebar"
         className={`bg-sidebar text-sidebar-foreground ${isCollapsed ? 'w-16' : 'w-56'} flex-shrink-0 fixed md:relative h-full z-30 transform transition-all duration-300 ease-in-out flex flex-col shadow-2xl ${
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
@@ -103,6 +108,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProp
                   onClick={onClose}
                   onMouseEnter={(e) => handleMouseEnter(e, item.label)}
                   onMouseLeave={handleMouseLeave}
+                  data-tour={item.tourId}
                   className={({ isActive }) =>
                     `flex items-center ${isCollapsed ? 'justify-center' : 'gap-2'} px-3 py-2 text-sm rounded-lg font-medium transition-colors duration-200 group ${
                       isActive
@@ -125,13 +131,27 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProp
               </li>
             )}
 
+            {/* Tour Button */}
+            <li className={isCollapsed ? 'mt-4 pt-4 border-t border-sidebar-border' : ''}>
+              <button
+                onClick={startTour}
+                onMouseEnter={(e) => handleMouseEnter(e, "Cómo usar")}
+                onMouseLeave={handleMouseLeave}
+                className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-2'} px-3 py-2 text-sm rounded-lg font-medium transition-colors duration-200 group text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`}
+              >
+                <HelpCircle className="w-5 h-5" />
+                {!isCollapsed && <span>Cómo usar</span>}
+              </button>
+            </li>
+
             {systemItems.map((item) => (
-              <li key={item.to} className={isCollapsed ? 'mt-4 pt-4 border-t border-sidebar-border' : ''}>
+              <li key={item.to}>
                 <NavLink
                   to={item.to}
                   onClick={onClose}
                   onMouseEnter={(e) => handleMouseEnter(e, item.label, item.badge && unreadCount > 0 ? unreadCount : undefined)}
                   onMouseLeave={handleMouseLeave}
+                  data-tour={item.tourId}
                   className={({ isActive }) =>
                     `flex items-center ${isCollapsed ? 'justify-center' : 'gap-2'} px-3 py-2 text-sm rounded-lg font-medium transition-colors duration-200 group relative ${
                       isActive
@@ -175,7 +195,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProp
         </div>
 
         {/* User Footer */}
-        <div className="p-3 border-t border-sidebar-border bg-foreground/5">
+        <div className="p-3 border-t border-sidebar-border bg-foreground/5" data-tour="user-profile">
           <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
             <img
               src={user?.avatar_url || "https://i.pravatar.cc/150?img=11"}

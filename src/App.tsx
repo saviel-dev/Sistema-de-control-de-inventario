@@ -10,6 +10,7 @@ import { ReportsProvider } from '@/contexts/ReportsContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { DashboardProvider } from '@/contexts/DashboardContext';
+import { TourProvider } from '@/contexts/TourContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import Dashboard from '@/pages/Dashboard';
 import InventarioGeneral from '@/pages/InventarioGeneral';
@@ -34,24 +35,26 @@ function App() {
                     <MovementsProvider>
                       <ReportsProvider>
                         <DashboardProvider>
-                          <Router>
-                          <Toaster position="top-right" richColors />
-                          <Routes>
-                            {/* Ruta pública - Login */}
-                            <Route path="/" element={<Index />} />
-                            
-                            {/* Rutas protegidas - Dashboard */}
-                            <Route element={<DashboardLayout />}>
-                              <Route path="dashboard" element={<Dashboard />} />
-                              <Route path="inventario-general" element={<InventarioGeneral />} />
-                              <Route path="inventario-detallado" element={<InventarioDetallado />} />
-                              <Route path="movimientos" element={<Movimientos />} />
-                              <Route path="configuracion" element={<Configuracion />} />
-                              <Route path="reportes" element={<Reportes />} />
-                              <Route path="notificaciones" element={<Notificaciones />} />
-                            </Route>
-                          </Routes>
-                          </Router>
+                          <TourProvider>
+                            <Router>
+                            <Toaster position="top-right" richColors />
+                            <Routes>
+                              {/* Ruta pública - Login */}
+                              <Route path="/" element={<Index />} />
+                              
+                              {/* Rutas protegidas - Dashboard */}
+                              <Route element={<DashboardLayout />}>
+                                <Route path="dashboard" element={<Dashboard />} />
+                                <Route path="inventario-general" element={<InventarioGeneral />} />
+                                <Route path="inventario-detallado" element={<InventarioDetallado />} />
+                                <Route path="movimientos" element={<Movimientos />} />
+                                <Route path="configuracion" element={<Configuracion />} />
+                                <Route path="reportes" element={<Reportes />} />
+                                <Route path="notificaciones" element={<Notificaciones />} />
+                              </Route>
+                            </Routes>
+                            </Router>
+                          </TourProvider>
                         </DashboardProvider>
                       </ReportsProvider>
                     </MovementsProvider>
