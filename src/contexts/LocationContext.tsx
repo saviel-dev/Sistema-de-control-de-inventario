@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { negociosService } from '@/services/negocios.service';
 import type { Negocio } from '@/types/database.types';
 import { toast } from 'sonner';
+import { createRealtimeSubscription, realtimeLogger } from '@/lib/realtime-utils';
+import type { RealtimePayload } from '@/types/realtime.types';
 
 // Interfaz Location para compatibilidad con componentes existentes
 export interface Location {
@@ -47,9 +49,54 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Cargar ubicaciones al montar el componente
+  // Cargar ubicaciones al montar el componente y configurar suscripción Realtime
   useEffect(() => {
     loadLocations();
+
+    // Configurar suscripción Realtime para negocios
+    realtimeLogger.log('Setting up Realtime subscription for negocios');
+    
+    const { unsubscribe } = createRealtimeSubscription({
+      table: 'negocios',
+      event: '*',
+      onInsert: (payload: RealtimePayload<'negocios'>) => {
+        realtimeLogger.log('New location inserted:', payload.new);
+        if (payload.new && 'activo' in payload.new && payload.new.activo) {
+          const newLocation = mapToLocation(payload.new as Negocio);
+          setLocations((prevLocations) => {
+            const exists = prevLocations.some(l => l.id === newLocation.id);
+            if (exists) return prevLocations;
+            return [...prevLocations, newLocation];
+          });
+        }
+      },
+      onUpdate: (payload: RealtimePayload<'negocios'>) => {
+        realtimeLogger.log('Location updated:', payload.new);
+        if (payload.new && 'id' in payload.new) {
+          const updatedLocation = mapToLocation(payload.new as Negocio);
+          setLocations((prevLocations) => 
+            prevLocations.map(l => l.id === updatedLocation.id ? updatedLocation : l)
+          );
+        }
+      },
+      onDelete: (payload: RealtimePayload<'negocios'>) => {
+        realtimeLogger.log('Location deleted:', payload.old);
+        if (payload.old && 'id' in payload.old) {
+          setLocations((prevLocations) => 
+            prevLocations.filter(l => l.id !== payload.old.id)
+          );
+        }
+      },
+      onError: (error) => {
+        realtimeLogger.error('Error in negocios subscription:', error);
+      },
+    });
+
+    // Cleanup al desmontar
+    return () => {
+      realtimeLogger.log('Cleaning up negocios subscription');
+      unsubscribe();
+    };
   }, []);
 
   const loadLocations = async () => {
@@ -74,9 +121,8 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       setError(null);
       const newLocationData = mapFromLocation(location);
-      const createdLocation = await negociosService.crear(newLocationData);
-      const mappedLocation = mapToLocation(createdLocation);
-      setLocations([...locations, mappedLocation]);
+      await negociosService.crear(newLocationData);
+      // No actualizar estado local aquí - la suscripción Realtime lo hará automáticamente
       toast.success(`Ubicación "${location.name}" agregada exitosamente`);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Error al agregar ubicación';
@@ -96,9 +142,8 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         telefono: location.phone || null,
         email: location.email || null,
       };
-      const updatedLocation = await negociosService.actualizar(location.id, updateData);
-      const mappedLocation = mapToLocation(updatedLocation);
-      setLocations(locations.map(l => l.id === location.id ? mappedLocation : l));
+      await negociosService.actualizar(location.id, updateData);
+      // No actualizar estado local aquí - la suscripción Realtime lo hará automáticamente
       toast.success(`Ubicación "${location.name}" actualizada exitosamente`);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Error al actualizar ubicación';
@@ -114,7 +159,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setError(null);
       const location = locations.find(l => l.id === id);
       await negociosService.eliminar(id);
-      setLocations(locations.filter(l => l.id !== id));
+      // No actualizar estado local aquí - la suscripción Realtime lo hará automáticamente
       toast.success(`Ubicación "${location?.name || 'desconocida'}" eliminada exitosamente`);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Error al eliminar ubicación';

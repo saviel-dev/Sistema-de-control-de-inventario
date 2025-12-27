@@ -4,6 +4,8 @@ import { inventarioGeneralService } from '@/services/inventario-general.service'
 import { inventarioDetalladoService } from '@/services/inventario-detallado.service';
 import type { Movimiento, InsertMovimiento } from '@/types/database.types';
 import { toast } from 'sonner';
+import { createRealtimeSubscription, realtimeLogger, debounce } from '@/lib/realtime-utils';
+import type { RealtimePayload } from '@/types/realtime.types';
 
 // Interfaz para movimiento en el frontend
 export interface Movement {
@@ -71,9 +73,101 @@ export const MovementsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     totalMovements: 0,
   });
 
-  // Cargar movimientos al montar
+  // Cargar movimientos al montar y configurar suscripción Realtime
   useEffect(() => {
     loadMovements();
+
+    // Configurar suscripción Realtime para movimientos
+    realtimeLogger.log('Setting up Realtime subscription for movimientos');
+    
+    // Debounce para recalcular estadísticas (evitar cálculos excesivos)
+    const debouncedCalculateStats = debounce((movs: Movement[]) => {
+      calculateStatistics(movs);
+    }, 500);
+    
+    const { unsubscribe } = createRealtimeSubscription({
+      table: 'movimientos',
+      event: '*',
+      onInsert: async (payload: RealtimePayload<'movimientos'>) => {
+        realtimeLogger.log('New movement inserted:', payload.new);
+        if (payload.new && 'id' in payload.new) {
+          const mov = payload.new as Movimiento;
+          const productName = await getProductName(mov.producto_id, mov.tipo_inventario);
+          const userName = await getUserName(mov.usuario_id);
+
+          const newMovement: Movement = {
+            id: mov.id,
+            date: formatDate(mov.fecha_movimiento),
+            time: formatTime(mov.fecha_movimiento),
+            product: productName,
+            type: mov.tipo,
+            quantity: Number(mov.cantidad),
+            unit: mov.unidad,
+            reason: mov.motivo || '',
+            user: userName,
+            reference: mov.referencia || undefined,
+            location: mov.negocio_id || undefined,
+          };
+
+          setMovements((prevMovements) => {
+            const exists = prevMovements.some(m => m.id === newMovement.id);
+            if (exists) return prevMovements;
+            const updated = [newMovement, ...prevMovements];
+            debouncedCalculateStats(updated);
+            return updated;
+          });
+        }
+      },
+      onUpdate: async (payload: RealtimePayload<'movimientos'>) => {
+        realtimeLogger.log('Movement updated:', payload.new);
+        if (payload.new && 'id' in payload.new) {
+          const mov = payload.new as Movimiento;
+          const productName = await getProductName(mov.producto_id, mov.tipo_inventario);
+          const userName = await getUserName(mov.usuario_id);
+
+          const updatedMovement: Movement = {
+            id: mov.id,
+            date: formatDate(mov.fecha_movimiento),
+            time: formatTime(mov.fecha_movimiento),
+            product: productName,
+            type: mov.tipo,
+            quantity: Number(mov.cantidad),
+            unit: mov.unidad,
+            reason: mov.motivo || '',
+            user: userName,
+            reference: mov.referencia || undefined,
+            location: mov.negocio_id || undefined,
+          };
+
+          setMovements((prevMovements) => {
+            const updated = prevMovements.map(m => m.id === updatedMovement.id ? updatedMovement : m);
+            debouncedCalculateStats(updated);
+            return updated;
+          });
+        }
+      },
+      onDelete: (payload: RealtimePayload<'movimientos'>) => {
+        realtimeLogger.log('Movement deleted:', payload.old);
+        if (payload.old && 'id' in payload.old) {
+          setMovements((prevMovements) => {
+            const updated = prevMovements.filter(m => m.id !== payload.old.id);
+            debouncedCalculateStats(updated);
+            return updated;
+          });
+          // Invalidar cache de productos si es necesario
+          productCache.clear();
+        }
+      },
+      onError: (error) => {
+        realtimeLogger.error('Error in movimientos subscription:', error);
+      },
+    });
+
+    // Cleanup al desmontar
+    return () => {
+      realtimeLogger.log('Cleaning up movimientos subscription');
+      unsubscribe();
+    };
   }, []);
 
   // Cargar nombre de producto (con caché)

@@ -5,6 +5,8 @@ import { movimientosService } from '@/services/movimientos.service';
 import { useNotifications } from '@/contexts/NotificationContext';
 import type { InventarioGeneral } from '@/types/database.types';
 import { toast } from 'sonner';
+import { createRealtimeSubscription, realtimeLogger } from '@/lib/realtime-utils';
+import type { RealtimePayload } from '@/types/realtime.types';
 
 // Mantener la interfaz Product para compatibilidad con componentes existentes
 export interface Product {
@@ -84,9 +86,55 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [error, setError] = useState<string | null>(null);
   const { addNotification } = useNotifications();
 
-  // Cargar productos al montar el componente
+  // Cargar productos al montar el componente y configurar suscripción Realtime
   useEffect(() => {
     loadProducts();
+
+    // Configurar suscripción Realtime para inventario_general
+    realtimeLogger.log('Setting up Realtime subscription for inventario_general');
+    
+    const { unsubscribe } = createRealtimeSubscription({
+      table: 'inventario_general',
+      event: '*',
+      onInsert: (payload: RealtimePayload<'inventario_general'>) => {
+        realtimeLogger.log('New product inserted:', payload.new);
+        if (payload.new && 'activo' in payload.new && payload.new.activo) {
+          const newProduct = mapToProduct(payload.new as InventarioGeneral);
+          setProducts((prevProducts) => {
+            // Verificar si el producto ya existe para evitar duplicados
+            const exists = prevProducts.some(p => p.id === newProduct.id);
+            if (exists) return prevProducts;
+            return [...prevProducts, newProduct];
+          });
+        }
+      },
+      onUpdate: (payload: RealtimePayload<'inventario_general'>) => {
+        realtimeLogger.log('Product updated:', payload.new);
+        if (payload.new && 'id' in payload.new) {
+          const updatedProduct = mapToProduct(payload.new as InventarioGeneral);
+          setProducts((prevProducts) => 
+            prevProducts.map(p => p.id === updatedProduct.id ? updatedProduct : p)
+          );
+        }
+      },
+      onDelete: (payload: RealtimePayload<'inventario_general'>) => {
+        realtimeLogger.log('Product deleted:', payload.old);
+        if (payload.old && 'id' in payload.old && payload.old.id) {
+          setProducts((prevProducts) => 
+            prevProducts.filter(p => p.id !== payload.old.id)
+          );
+        }
+      },
+      onError: (error) => {
+        realtimeLogger.error('Error in inventario_general subscription:', error);
+      },
+    });
+
+    // Cleanup al desmontar
+    return () => {
+      realtimeLogger.log('Cleaning up inventario_general subscription');
+      unsubscribe();
+    };
   }, []);
 
   const loadProducts = async () => {
@@ -112,8 +160,7 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setError(null);
       const newProductData = mapFromProduct(product);
       const createdProduct = await inventarioGeneralService.crear(newProductData);
-      const mappedProduct = mapToProduct(createdProduct);
-      setProducts([...products, mappedProduct]);
+      // No actualizar estado local aquí - la suscripción Realtime lo hará automáticamente
       toast.success(`Producto "${product.name}" agregado exitosamente`);
       addNotification('Nuevo Producto', `Se ha agregado "${product.name}" al inventario general`, 'exito');
     } catch (err) {
@@ -147,9 +194,8 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
         estado: statusMap[product.status] || 'disponible',
         imagen_url: product.image,
       };
-      const updatedProduct = await inventarioGeneralService.actualizar(product.id, updateData);
-      const mappedProduct = mapToProduct(updatedProduct);
-      setProducts(products.map(p => p.id === product.id ? mappedProduct : p));
+      await inventarioGeneralService.actualizar(product.id, updateData);
+      // No actualizar estado local aquí - la suscripción Realtime lo hará automáticamente
       toast.success(`Producto "${product.name}" actualizado exitosamente`);
       addNotification('Producto Actualizado', `Se ha actualizado "${product.name}"`, 'info');
     } catch (err) {
@@ -167,8 +213,7 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const product = products.find(p => p.id === id);
       await inventarioGeneralService.eliminar(id);
       
-      // Update local state immediately
-      setProducts(products.filter(p => p.id !== id));
+      // No actualizar estado local aquí - la suscripción Realtime lo hará automáticamente
       
       toast.success(`Producto "${product?.name || 'desconocido'}" eliminado exitosamente`);
       addNotification('Producto Eliminado', `Se ha eliminado "${product?.name || 'producto'}" del inventario`, 'advertencia');

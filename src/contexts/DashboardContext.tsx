@@ -42,19 +42,49 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   useEffect(() => {
     loadStats();
 
-    // Subscribe to realtime changes in inventory to update dashboard stats
+    // Subscribe to realtime changes in multiple tables to update dashboard stats
+    // Using debounce to avoid excessive refreshes
+    let refreshTimeout: NodeJS.Timeout | null = null;
+    const debouncedRefresh = () => {
+      if (refreshTimeout) clearTimeout(refreshTimeout);
+      refreshTimeout = setTimeout(() => {
+        loadStats();
+      }, 1000); // Esperar 1 segundo antes de refrescar
+    };
+
     const channel = supabase
-      .channel('dashboard-inventory-changes')
+      .channel('dashboard-all-changes')
+      // Suscribirse a cambios en inventario_general
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'inventario_general' },
         () => {
-          loadStats();
+          console.log('[Dashboard] Inventario general changed');
+          debouncedRefresh();
+        }
+      )
+      // Suscribirse a cambios en inventario_detallado
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'inventario_detallado' },
+        () => {
+          console.log('[Dashboard] Inventario detallado changed');
+          debouncedRefresh();
+        }
+      )
+      // Suscribirse a cambios en movimientos
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'movimientos' },
+        () => {
+          console.log('[Dashboard] Movimientos changed');
+          debouncedRefresh();
         }
       )
       .subscribe();
 
     return () => {
+      if (refreshTimeout) clearTimeout(refreshTimeout);
       supabase.removeChannel(channel);
     };
   }, []);

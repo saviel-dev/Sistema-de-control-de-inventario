@@ -6,6 +6,8 @@ import type { InventarioDetallado } from '@/types/database.types';
 import { toast } from 'sonner';
 import { Product } from '@/contexts/ProductContext';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { createRealtimeSubscription, realtimeLogger } from '@/lib/realtime-utils';
+import type { RealtimePayload } from '@/types/realtime.types';
 
 interface DetailedInventoryContextType {
   getProductsByLocation: (locationId: string) => Product[];
@@ -75,9 +77,80 @@ export const DetailedInventoryProvider: React.FC<{ children: React.ReactNode }> 
   const [error, setError] = useState<string | null>(null);
   const { addNotification } = useNotifications();
 
-  // Cargar conteos globales al iniciar
+  // Cargar conteos globales al iniciar y configurar suscripción Realtime
   useEffect(() => {
     loadCounts();
+
+    // Configurar suscripción Realtime para inventario_detallado
+    realtimeLogger.log('Setting up Realtime subscription for inventario_detallado');
+    
+    const { unsubscribe } = createRealtimeSubscription({
+      table: 'inventario_detallado',
+      event: '*',
+      onInsert: (payload: RealtimePayload<'inventario_detallado'>) => {
+        realtimeLogger.log('New detailed product inserted:', payload.new);
+        if (payload.new && 'activo' in payload.new && payload.new.activo && 'negocio_id' in payload.new) {
+          const newProduct = mapToProduct(payload.new as InventarioDetallado);
+          const locationId = payload.new.negocio_id;
+          
+          setProductsByLocation((prev) => {
+            const locationProducts = prev[locationId] || [];
+            const exists = locationProducts.some(p => p.id === newProduct.id);
+            if (exists) return prev;
+            
+            return {
+              ...prev,
+              [locationId]: [...locationProducts, newProduct]
+            };
+          });
+          
+          setProductCounts((prev) => ({
+            ...prev,
+            [locationId]: (prev[locationId] || 0) + 1
+          }));
+        }
+      },
+      onUpdate: (payload: RealtimePayload<'inventario_detallado'>) => {
+        realtimeLogger.log('Detailed product updated:', payload.new);
+        if (payload.new && 'id' in payload.new && 'negocio_id' in payload.new) {
+          const updatedProduct = mapToProduct(payload.new as InventarioDetallado);
+          const locationId = payload.new.negocio_id;
+          
+          setProductsByLocation((prev) => ({
+            ...prev,
+            [locationId]: (prev[locationId] || []).map(p => 
+              p.id === updatedProduct.id ? updatedProduct : p
+            )
+          }));
+        }
+      },
+      onDelete: (payload: RealtimePayload<'inventario_detallado'>) => {
+        realtimeLogger.log('Detailed product deleted:', payload.old);
+        if (payload.old && 'id' in payload.old && 'negocio_id' in payload.old) {
+          const productId = payload.old.id;
+          const locationId = payload.old.negocio_id;
+          
+          setProductsByLocation((prev) => ({
+            ...prev,
+            [locationId]: (prev[locationId] || []).filter(p => p.id !== productId)
+          }));
+          
+          setProductCounts((prev) => ({
+            ...prev,
+            [locationId]: Math.max(0, (prev[locationId] || 1) - 1)
+          }));
+        }
+      },
+      onError: (error) => {
+        realtimeLogger.error('Error in inventario_detallado subscription:', error);
+      },
+    });
+
+    // Cleanup al desmontar
+    return () => {
+      realtimeLogger.log('Cleaning up inventario_detallado subscription');
+      unsubscribe();
+    };
   }, []);
 
   const loadCounts = async () => {
@@ -139,15 +212,7 @@ export const DetailedInventoryProvider: React.FC<{ children: React.ReactNode }> 
         }
       );
 
-      const mappedProduct = mapToProduct(createdProduct);
-      setProductsByLocation(prev => ({
-        ...prev,
-        [locationId]: [...(prev[locationId] || []), mappedProduct]
-      }));
-      setProductCounts(prev => ({
-        ...prev,
-        [locationId]: (prev[locationId] || 0) + 1
-      }));
+      // No actualizar estado local aquí - la suscripción Realtime lo hará automáticamente
       toast.success(`Producto "${product.name}" agregado exitosamente`);
       addNotification('Nuevo Producto Detallado', `Se ha agregado "${product.name}" a la ubicación`, 'exito');
     } catch (err) {
@@ -225,15 +290,7 @@ export const DetailedInventoryProvider: React.FC<{ children: React.ReactNode }> 
         }
       );
 
-      const mappedProduct = mapToProduct(createdProduct);
-      setProductsByLocation(prev => ({
-        ...prev,
-        [locationId]: [...(prev[locationId] || []), mappedProduct]
-      }));
-      setProductCounts(prev => ({
-        ...prev,
-        [locationId]: (prev[locationId] || 0) + 1
-      }));
+      // No actualizar estado local aquí - la suscripción Realtime lo hará automáticamente
 
       toast.success(`Producto "${generalProduct.nombre}" transferido exitosamente`);
       
@@ -265,13 +322,8 @@ export const DetailedInventoryProvider: React.FC<{ children: React.ReactNode }> 
         estado: statusMapToSpanish[product.status] || 'disponible',
         imagen_url: product.image,
       };
-      const updatedProduct = await inventarioDetalladoService.actualizar(product.id, updateData);
-      const mappedProduct = mapToProduct(updatedProduct);
-      
-      setProductsByLocation(prev => ({
-        ...prev,
-        [locationId]: (prev[locationId] || []).map(p => p.id === product.id ? mappedProduct : p)
-      }));
+      await inventarioDetalladoService.actualizar(product.id, updateData);
+      // No actualizar estado local aquí - la suscripción Realtime lo hará automáticamente
       
       toast.success(`Producto "${product.name}" actualizado exitosamente`);
       addNotification('Producto Detallado Actualizado', `Se ha actualizado "${product.name}"`, 'info');
@@ -292,14 +344,7 @@ export const DetailedInventoryProvider: React.FC<{ children: React.ReactNode }> 
       
       await inventarioDetalladoService.eliminar(productId);
       
-      setProductsByLocation(prev => ({
-        ...prev,
-        [locationId]: (prev[locationId] || []).filter(p => p.id !== productId)
-      }));
-      setProductCounts(prev => ({
-        ...prev,
-        [locationId]: Math.max(0, (prev[locationId] || 1) - 1)
-      }));
+      // No actualizar estado local aquí - la suscripción Realtime lo hará automáticamente
       
       toast.success(`Producto "${product?.name || 'desconocido'}" eliminado exitosamente`);
       addNotification('Producto Eliminado', `Se ha eliminado "${product?.name || 'producto'}" de la ubicación`, 'advertencia');
