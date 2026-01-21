@@ -1,4 +1,4 @@
-import { ShoppingCart, Plus, Minus, Trash2, User, Printer, X, CheckCircle } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, User, Download, X, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import PageTransition from '@/components/layout/PageTransition';
 import { useExchangeRate } from '@/contexts/ExchangeRateContext';
@@ -156,10 +156,45 @@ const PuntoDeVenta = () => {
         setReceiptData(null);
     };
 
-    // Imprimir recibo
-    const printReceipt = () => {
-        window.print();
-        toast.success("Preparando impresión...");
+    // Guardar recibo como imagen
+    const saveAsImage = async () => {
+        try {
+            // Importar html2canvas dinámicamente
+            const html2canvas = (await import('html2canvas')).default;
+
+            // Obtener el elemento del recibo
+            const receiptElement = document.getElementById('receipt-content');
+            if (!receiptElement) {
+                toast.error("No se pudo capturar el recibo");
+                return;
+            }
+
+            // Capturar el elemento como canvas
+            const canvas = await html2canvas(receiptElement, {
+                backgroundColor: null,
+                scale: 2, // Mayor calidad
+                logging: false,
+                useCORS: true
+            });
+
+            // Convertir a blob y descargar
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `recibo-${receiptData.orderNumber}-${receiptData.date.replace(/\//g, '-')}.png`;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                    toast.success("Recibo guardado como imagen");
+                } else {
+                    toast.error("Error al generar la imagen");
+                }
+            });
+        } catch (error) {
+            console.error('Error al guardar imagen:', error);
+            toast.error("Error al guardar la imagen");
+        }
     };
 
     return (
@@ -373,7 +408,8 @@ const PuntoDeVenta = () => {
                 {showReceipt && receiptData && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={closeReceipt}>
                         <div
-                            className="bg-white w-full max-w-sm rounded-lg shadow-2xl overflow-hidden print:shadow-none print:max-w-full print:rounded-none"
+                            id="receipt-content"
+                            className="bg-card w-full max-w-sm rounded-lg shadow-2xl overflow-hidden print:shadow-none print:max-w-full print:rounded-none border border-border"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Decoración superior */}
@@ -382,32 +418,32 @@ const PuntoDeVenta = () => {
                             <div className="p-6">
                                 {/* Encabezado */}
                                 <div className="text-center mb-6">
-                                    <h1 className="text-2xl font-extrabold text-gray-800 uppercase tracking-tighter">Sabores Express</h1>
-                                    <p className="text-sm text-gray-500">¡Comida rápida, sabor increíble!</p>
-                                    <p className="text-xs text-gray-400 mt-1">Calle Principal, Local #12</p>
+                                    <h1 className="text-2xl font-extrabold text-foreground uppercase tracking-tighter">Sabores Express</h1>
+                                    <p className="text-sm text-muted-foreground">¡Comida rápida, sabor increíble!</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Calle Principal, Local #12</p>
                                 </div>
 
                                 {/* Info de la Orden */}
-                                <div className="font-mono text-sm border-t border-b border-dashed border-gray-300 py-3 mb-4">
-                                    <div className="flex justify-between">
+                                <div className="font-mono text-sm border-t border-b border-dashed border-border py-3 mb-4">
+                                    <div className="flex justify-between text-foreground">
                                         <span>Orden:</span>
                                         <span className="font-bold">#{receiptData.orderNumber}</span>
                                     </div>
-                                    <div className="flex justify-between">
+                                    <div className="flex justify-between text-foreground">
                                         <span>Fecha:</span>
                                         <span>{receiptData.date}</span>
                                     </div>
-                                    <div className="flex justify-between">
+                                    <div className="flex justify-between text-foreground">
                                         <span>Hora:</span>
                                         <span>{receiptData.time}</span>
                                     </div>
                                     {receiptData.customerName !== 'Cliente' && (
-                                        <div className="flex justify-between mt-1 pt-1 border-t border-gray-200">
+                                        <div className="flex justify-between mt-1 pt-1 border-t border-border text-foreground">
                                             <span>Cliente:</span>
                                             <span>{receiptData.customerName}</span>
                                         </div>
                                     )}
-                                    <div className="flex justify-between mt-1 pt-1 border-t border-gray-200">
+                                    <div className="flex justify-between mt-1 pt-1 border-t border-border text-foreground">
                                         <span>Pago:</span>
                                         <span className="font-semibold">{receiptData.paymentMethod}</span>
                                     </div>
@@ -415,14 +451,14 @@ const PuntoDeVenta = () => {
 
                                 {/* Detalle de Productos */}
                                 <div className="font-mono text-sm mb-6">
-                                    <div className="flex justify-between font-bold border-b border-gray-100 pb-1 mb-2">
+                                    <div className="flex justify-between font-bold border-b border-border pb-1 mb-2 text-foreground">
                                         <span className="w-1/2">Ítem</span>
                                         <span className="w-1/4 text-center">Cant</span>
                                         <span className="w-1/4 text-right">Total</span>
                                     </div>
                                     <div className="space-y-1">
                                         {receiptData.items.map((item: CartItem) => (
-                                            <div key={item.id} className="flex justify-between">
+                                            <div key={item.id} className="flex justify-between text-foreground">
                                                 <span className="w-1/2 truncate">{item.name}</span>
                                                 <span className="w-1/4 text-center">{item.quantity}</span>
                                                 <span className="w-1/4 text-right">${(item.priceUSD * item.quantity).toFixed(2)}</span>
@@ -432,41 +468,41 @@ const PuntoDeVenta = () => {
                                 </div>
 
                                 {/* Totales */}
-                                <div className="border-t-2 border-double border-gray-300 pt-3 font-mono">
-                                    <div className="flex justify-between text-sm">
+                                <div className="border-t-2 border-double border-border pt-3 font-mono">
+                                    <div className="flex justify-between text-sm text-foreground">
                                         <span>Subtotal:</span>
                                         <span>${receiptData.subtotal.toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between text-lg font-bold mt-1">
-                                        <span>TOTAL:</span>
-                                        <span className="text-orange-600">${receiptData.total.toFixed(2)}</span>
+                                        <span className="text-foreground">TOTAL:</span>
+                                        <span className="text-orange-600 dark:text-orange-500">${receiptData.total.toFixed(2)}</span>
                                     </div>
-                                    <div className="text-right text-sm text-gray-600 mt-1">
+                                    <div className="text-right text-sm text-muted-foreground mt-1">
                                         {formatBs(convert(receiptData.total))}
                                     </div>
                                 </div>
 
                                 {/* Footer */}
-                                <div className="mt-6 pt-4 border-t-2 border-dashed border-gray-300 text-center text-xs text-gray-600">
+                                <div className="mt-6 pt-4 border-t-2 border-dashed border-border text-center text-xs text-muted-foreground">
                                     <p className="font-semibold">¡Gracias por su compra!</p>
                                     <p className="mt-1">Vuelva pronto</p>
                                 </div>
                             </div>
 
                             {/* Botones de Acción */}
-                            <div className="p-4 bg-gray-50 flex space-x-2 print:hidden border-t border-gray-200">
+                            <div className="p-4 bg-secondary/30 flex space-x-2 print:hidden border-t border-border">
                                 <button
                                     onClick={closeReceipt}
-                                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-600 rounded-md hover:bg-gray-100 transition"
+                                    className="flex-1 px-4 py-2 border border-border text-foreground rounded-md hover:bg-secondary transition"
                                 >
                                     Cerrar
                                 </button>
                                 <button
-                                    onClick={printReceipt}
-                                    className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-black transition flex items-center justify-center"
+                                    onClick={saveAsImage}
+                                    className="flex-1 px-4 py-2 bg-foreground text-background rounded-md hover:opacity-90 transition flex items-center justify-center"
                                 >
-                                    <Printer className="w-4 h-4 mr-2" />
-                                    Imprimir
+                                    <Download className="w-4 h-4 mr-2" />
+                                    Guardar Foto
                                 </button>
                             </div>
                         </div>

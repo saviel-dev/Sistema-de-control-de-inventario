@@ -1,5 +1,5 @@
 
-import { Download, Calendar, Package, AlertTriangle, AlertCircle, Layers, Activity, FileText, FileSpreadsheet, FileDown, ChevronDown, Loader2 } from 'lucide-react';
+import { Download, Calendar, Package, AlertTriangle, AlertCircle, Layers, Activity, FileText, FileSpreadsheet, FileDown, ChevronDown, Loader2, ShoppingCart, TrendingUp, Trophy, DollarSign } from 'lucide-react';
 import { useState } from 'react';
 import StatCard from '@/components/dashboard/StatCard';
 import PageTransition from '@/components/layout/PageTransition';
@@ -11,6 +11,24 @@ const Reportes = () => {
   const { reportData, loading, currentPeriod, setDateRange, exportToPDF, exportToExcel, exportToCSV, exporting } = useReports();
   const { rate, convert, formatBs } = useExchangeRate();
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
+
+  // Datos simulados del POS
+  const mockPOSData = {
+    totalSales: 245.50, // USD
+    ordersCompleted: 48,
+    bestSellingProduct: {
+      name: "Hamburguesa de Carne con Papas",
+      quantity: 55
+    },
+    averageTicket: 5.11, // USD
+    topProducts: [
+      { name: "Hamburguesa de Carne con Papas", quantity: 55, revenue: 49.50 },
+      { name: "Hamburguesa de Pollo", quantity: 48, revenue: 36.00 },
+      { name: "Perro Sencillo", quantity: 45, revenue: 7.65 },
+      { name: "Salchipapa Especial", quantity: 32, revenue: 38.40 },
+      { name: "Shawarma Mixto", quantity: 40, revenue: 34.00 }
+    ]
+  };
 
   const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setDateRange(e.target.value as ReportPeriod);
@@ -144,59 +162,160 @@ const Reportes = () => {
           </div>
         ) : (
           <>
-            {/* KPI Cards Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-              {/* Valor Inventario - USD con VES debajo */}
-              <div className="bg-blue-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
-                <div className="flex justify-between items-start mb-2">
-                  <p className="text-xs font-medium text-white/90 uppercase tracking-wide">Valor Insumos</p>
-                  <div className="p-2 bg-blue-600 rounded-full flex items-center justify-center">
-                    <Package className="w-5 h-5 text-white" />
+            {/* KPI Cards Row - Inventario */}
+            <div>
+              <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                <Package className="w-5 h-5 text-primary" />
+                Inventario
+              </h2>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                {/* Valor Inventario - USD con VES debajo */}
+                <div className="bg-blue-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
+                  <div className="flex justify-between items-start mb-2">
+                    <p className="text-xs font-medium text-white/90 uppercase tracking-wide">Valor Insumos</p>
+                    <div className="p-2 bg-blue-600 rounded-full flex items-center justify-center">
+                      <Package className="w-5 h-5 text-white" />
+                    </div>
                   </div>
+                  {/* El valor ya está en USD, solo formatearlo */}
+                  <p className="text-2xl font-bold text-white">{formatUSD(reportData.kpis.inventoryValue)}</p>
+                  {/* Convertir USD a VES multiplicando por la tasa */}
+                  <p className="text-xs text-white/70 mt-1">{formatVES(convertToVES(reportData.kpis.inventoryValue))}</p>
+                  <p className="text-xs text-white/80 mt-2">{reportData.kpis.inventoryValue > 0 ? 'Actualizado' : 'Sin datos'}</p>
                 </div>
-                {/* El valor ya está en USD, solo formatearlo */}
-                <p className="text-2xl font-bold text-white">{formatUSD(reportData.kpis.inventoryValue)}</p>
-                {/* Convertir USD a VES multiplicando por la tasa */}
-                <p className="text-xs text-white/70 mt-1">{formatVES(convertToVES(reportData.kpis.inventoryValue))}</p>
-                <p className="text-xs text-white/80 mt-2">{reportData.kpis.inventoryValue > 0 ? 'Actualizado' : 'Sin datos'}</p>
-              </div>
 
-              {/* Pérdidas - USD con VES debajo */}
-              <div className="bg-rose-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
-                <div className="flex justify-between items-start mb-2">
-                  <p className="text-xs font-medium text-white/90 uppercase tracking-wide">
-                    Pérdidas ({currentPeriod === 'daily' ? 'Hoy' : 'Período'})
-                  </p>
-                  <div className="p-2 bg-rose-600 rounded-full flex items-center justify-center">
-                    <AlertTriangle className="w-5 h-5 text-white" />
+                {/* Pérdidas - USD con VES debajo */}
+                <div className="bg-rose-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
+                  <div className="flex justify-between items-start mb-2">
+                    <p className="text-xs font-medium text-white/90 uppercase tracking-wide">
+                      Pérdidas ({currentPeriod === 'daily' ? 'Hoy' : 'Período'})
+                    </p>
+                    <div className="p-2 bg-rose-600 rounded-full flex items-center justify-center">
+                      <AlertTriangle className="w-5 h-5 text-white" />
+                    </div>
                   </div>
+                  {/* El valor ya está en USD, solo formatearlo */}
+                  <p className="text-2xl font-bold text-white">{formatUSD(reportData.kpis.periodLosses)}</p>
+                  {/* Convertir USD a VES multiplicando por la tasa */}
+                  <p className="text-xs text-white/70 mt-1">{formatVES(convertToVES(reportData.kpis.periodLosses))}</p>
+                  <p className="text-xs text-white/80 mt-2">{reportData.kpis.periodLosses > 0 ? 'Con pérdidas' : 'Sin pérdidas'}</p>
                 </div>
-                {/* El valor ya está en USD, solo formatearlo */}
-                <p className="text-2xl font-bold text-white">{formatUSD(reportData.kpis.periodLosses)}</p>
-                {/* Convertir USD a VES multiplicando por la tasa */}
-                <p className="text-xs text-white/70 mt-1">{formatVES(convertToVES(reportData.kpis.periodLosses))}</p>
-                <p className="text-xs text-white/80 mt-2">{reportData.kpis.periodLosses > 0 ? 'Con pérdidas' : 'Sin pérdidas'}</p>
-              </div>
 
-              <StatCard
-                title="Productos Activos"
-                value={reportData.kpis.activeProducts.toString()}
-                icon={Layers}
-                bgColor="bg-emerald-500"
-                iconBgColor="bg-emerald-600"
-                status={reportData.kpis.activeProducts > 0 ? 'En insumos' : 'Sin productos'}
-              />
-              <StatCard
-                title="Alertas Stock"
-                value={reportData.kpis.stockAlerts.toString()}
-                icon={AlertCircle}
-                bgColor="bg-amber-500"
-                iconBgColor="bg-amber-600"
-                status={reportData.kpis.stockAlerts > 0 ? 'Requiere atención' : 'Sin alertas'}
-              />
+                <StatCard
+                  title="Productos Activos"
+                  value={reportData.kpis.activeProducts.toString()}
+                  icon={Layers}
+                  bgColor="bg-emerald-500"
+                  iconBgColor="bg-emerald-600"
+                  status={reportData.kpis.activeProducts > 0 ? 'En insumos' : 'Sin productos'}
+                />
+                <StatCard
+                  title="Alertas Stock"
+                  value={reportData.kpis.stockAlerts.toString()}
+                  icon={AlertCircle}
+                  bgColor="bg-amber-500"
+                  iconBgColor="bg-amber-600"
+                  status={reportData.kpis.stockAlerts > 0 ? 'Requiere atención' : 'Sin alertas'}
+                />
+              </div>
             </div>
 
+            {/* KPI Cards Row - POS/Ventas */}
+            <div>
+              <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5 text-primary" />
+                Punto de Venta
+              </h2>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                {/* Ventas Totales */}
+                <div className="bg-emerald-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
+                  <div className="flex justify-between items-start mb-2">
+                    <p className="text-xs font-medium text-white/90 uppercase tracking-wide">Ventas Totales</p>
+                    <div className="p-2 bg-emerald-600 rounded-full flex items-center justify-center">
+                      <TrendingUp className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  <p className="text-2xl font-bold text-white">{formatUSD(mockPOSData.totalSales)}</p>
+                  <p className="text-xs text-white/70 mt-1">{formatVES(convertToVES(mockPOSData.totalSales))}</p>
+                  <p className="text-xs text-white/80 mt-2">{currentPeriod === 'daily' ? 'Hoy' : 'Período actual'}</p>
+                </div>
 
+                {/* Órdenes Completadas */}
+                <div className="bg-blue-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
+                  <div className="flex justify-between items-start mb-2">
+                    <p className="text-xs font-medium text-white/90 uppercase tracking-wide">Órdenes</p>
+                    <div className="p-2 bg-blue-600 rounded-full flex items-center justify-center">
+                      <ShoppingCart className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  <p className="text-2xl font-bold text-white">{mockPOSData.ordersCompleted}</p>
+                  <p className="text-xs text-white/70 mt-1">Completadas</p>
+                  <p className="text-xs text-white/80 mt-2">{currentPeriod === 'daily' ? 'Hoy' : 'Período actual'}</p>
+                </div>
+
+                {/* Producto Más Vendido */}
+                <div className="bg-amber-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
+                  <div className="flex justify-between items-start mb-2">
+                    <p className="text-xs font-medium text-white/90 uppercase tracking-wide">Más Vendido</p>
+                    <div className="p-2 bg-amber-600 rounded-full flex items-center justify-center">
+                      <Trophy className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  <p className="text-lg font-bold text-white line-clamp-1">{mockPOSData.bestSellingProduct.name}</p>
+                  <p className="text-xs text-white/70 mt-1">{mockPOSData.bestSellingProduct.quantity} vendidos</p>
+                  <p className="text-xs text-white/80 mt-2">{currentPeriod === 'daily' ? 'Hoy' : 'Período actual'}</p>
+                </div>
+
+                {/* Ticket Promedio */}
+                <div className="bg-purple-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
+                  <div className="flex justify-between items-start mb-2">
+                    <p className="text-xs font-medium text-white/90 uppercase tracking-wide">Ticket Promedio</p>
+                    <div className="p-2 bg-purple-600 rounded-full flex items-center justify-center">
+                      <DollarSign className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  <p className="text-2xl font-bold text-white">{formatUSD(mockPOSData.averageTicket)}</p>
+                  <p className="text-xs text-white/70 mt-1">{formatVES(convertToVES(mockPOSData.averageTicket))}</p>
+                  <p className="text-xs text-white/80 mt-2">Por orden</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Top 5 Productos Más Vendidos */}
+            <div className="bg-card rounded-xl shadow-sm overflow-hidden">
+              <div className="bg-primary/5 p-4 border-b border-border flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-primary" />
+                  <h3 className="font-bold text-foreground text-lg">Top Productos Más Vendidos</h3>
+                </div>
+                <span className="text-xs font-semibold bg-primary/10 text-primary px-2 py-1 rounded-full">
+                  {mockPOSData.topProducts.length} productos
+                </span>
+              </div>
+              <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                {mockPOSData.topProducts.map((product, idx) => (
+                  <div
+                    key={idx}
+                    className="flex flex-col gap-2 p-4 bg-background border border-border rounded-lg hover:border-primary/30 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl font-bold text-primary">#{idx + 1}</span>
+                      <TrendingUp className="w-4 h-4 text-emerald-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-foreground line-clamp-2 min-h-[2.5rem]">{product.name}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        <span className="font-semibold text-foreground">{product.quantity}</span> vendidos
+                      </p>
+                      <div className="mt-2 pt-2 border-t border-border">
+                        <p className="text-xs text-muted-foreground">Ingresos</p>
+                        <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatUSD(product.revenue)}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
             {/* Critical Stock Full Width */}
             {reportData.criticalStock.length > 0 && (
