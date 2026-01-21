@@ -62,8 +62,8 @@ const Navbar = () => {
                         </div>
                     </div>
 
-                    {/* Navigation Links - Desktop */}
-                    <div className="hidden lg:flex items-center gap-1">
+                    {/* Navigation Links - Tablet and Desktop */}
+                    <div className="hidden md:flex items-center gap-1">
                         {simpleNavItems.map((item) => (
                             <NavLink
                                 key={item.to}
@@ -181,11 +181,11 @@ const Navbar = () => {
                             )}
                         </NavLink>
 
-                        {/* Configuración */}
+                        {/* Configuración - visible en tablet+ */}
                         <NavLink
                             to="/configuracion"
                             className={({ isActive }) =>
-                                `flex items-center gap-2 px-3 py-2 text-sm rounded-lg font-medium transition-colors ${isActive
+                                `hidden md:flex items-center gap-2 px-3 py-2 text-sm rounded-lg font-medium transition-colors ${isActive
                                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                                     : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                                 }`
@@ -384,9 +384,12 @@ const Navbar = () => {
                 </div>
             )}
 
-            {/* Mobile Bottom Navigation */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-sidebar border-t border-sidebar-border shadow-lg z-50">
-                <div className="flex justify-around items-center px-2 py-2">
+            {/* Mobile Bottom Navigation - Solo móviles */}
+            <div
+                className="md:hidden fixed left-0 right-0 bg-sidebar border-t border-sidebar-border shadow-lg z-50"
+                style={{ bottom: 'env(safe-area-inset-bottom, 0px)' }}
+            >
+                <div className="flex justify-around items-center px-2 py-3">
                     {/* Dashboard */}
                     <NavLink
                         to="/dashboard"
@@ -408,8 +411,8 @@ const Navbar = () => {
                             setMobileInsumosOpen(!mobileInsumosOpen);
                         }}
                         className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[64px] ${location.pathname.includes('/inventario')
-                                ? "text-primary"
-                                : "text-muted-foreground"
+                            ? "text-primary"
+                            : "text-muted-foreground"
                             }`}
                     >
                         <Package className="w-5 h-5" />
@@ -423,8 +426,8 @@ const Navbar = () => {
                             setMobileNegocioOpen(!mobileNegocioOpen);
                         }}
                         className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[64px] ${location.pathname.includes('/productos-menu') || location.pathname.includes('/punto-venta')
-                                ? "text-primary"
-                                : "text-muted-foreground"
+                            ? "text-primary"
+                            : "text-muted-foreground"
                             }`}
                     >
                         <Store className="w-5 h-5" />

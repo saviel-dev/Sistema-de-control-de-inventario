@@ -273,7 +273,7 @@ const InventarioGeneral = () => {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div className="bg-blue-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
             <div className="flex justify-between items-start mb-2">
               <p className="text-xs font-medium text-white/90 uppercase tracking-wide">Total Productos</p>
@@ -340,8 +340,8 @@ const InventarioGeneral = () => {
                 <button
                   onClick={() => setViewMode('table')}
                   className={`flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-sm transition-colors flex items-center justify-center gap-2 ${viewMode === 'table'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-background text-foreground hover:bg-secondary'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-background text-foreground hover:bg-secondary'
                     }`}
                 >
                   <Table2 className="w-4 h-4" />
@@ -350,8 +350,8 @@ const InventarioGeneral = () => {
                 <button
                   onClick={() => setViewMode('cards')}
                   className={`flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-sm transition-colors flex items-center justify-center gap-2 ${viewMode === 'cards'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-background text-foreground hover:bg-secondary'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-background text-foreground hover:bg-secondary'
                     }`}
                 >
                   <Grid3x3 className="w-4 h-4" />
@@ -450,8 +450,8 @@ const InventarioGeneral = () => {
                     key={page}
                     onClick={() => setCurrentPage(page)}
                     className={`px-3 py-1 rounded text-sm ${currentPage === page
-                        ? 'bg-primary text-primary-foreground'
-                        : 'border border-border hover:bg-secondary'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'border border-border hover:bg-secondary'
                       }`}
                   >
                     {page}
@@ -605,8 +605,8 @@ const InventarioGeneral = () => {
                       key={page}
                       onClick={() => setCurrentPage(page)}
                       className={`px-3 py-1 rounded text-sm ${currentPage === page
-                          ? 'bg-primary text-primary-foreground'
-                          : 'border border-border hover:bg-secondary'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'border border-border hover:bg-secondary'
                         }`}
                     >
                       {page}

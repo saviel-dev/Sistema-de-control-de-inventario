@@ -43,6 +43,7 @@ const PuntoDeVenta = () => {
     const { convert, formatBs } = useExchangeRate();
     const [cart, setCart] = useState<CartItem[]>([]);
     const [customerName, setCustomerName] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState('Efectivo');
     const [showReceipt, setShowReceipt] = useState(false);
     const [receiptData, setReceiptData] = useState<any>(null);
     const [selectedCategory, setSelectedCategory] = useState('all');
@@ -136,6 +137,7 @@ const PuntoDeVenta = () => {
             date: now.toLocaleDateString('es-ES'),
             time: now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
             customerName: customerName || 'Cliente',
+            paymentMethod,
             items: [...cart],
             subtotal,
             total
@@ -150,6 +152,7 @@ const PuntoDeVenta = () => {
         setShowReceipt(false);
         setCart([]);
         setCustomerName('');
+        setPaymentMethod('Efectivo');
         setReceiptData(null);
     };
 
@@ -275,6 +278,20 @@ const PuntoDeVenta = () => {
                             />
                         </div>
 
+                        {/* Campo de método de pago */}
+                        <div className="mb-4">
+                            <label className="block text-sm font-semibold mb-2">
+                                Método de Pago
+                            </label>
+                            <input
+                                type="text"
+                                value={paymentMethod}
+                                onChange={(e) => setPaymentMethod(e.target.value)}
+                                placeholder="Ej: Efectivo, Pago Móvil, Mixto, etc."
+                                className="w-full px-3 py-2.5 border border-border rounded-lg bg-background text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                            />
+                        </div>
+
                         {/* Lista de productos en el carrito */}
                         <div className="flex-1 overflow-y-auto space-y-2 mb-4">
                             {cart.length === 0 ? (
@@ -390,6 +407,10 @@ const PuntoDeVenta = () => {
                                             <span>{receiptData.customerName}</span>
                                         </div>
                                     )}
+                                    <div className="flex justify-between mt-1 pt-1 border-t border-gray-200">
+                                        <span>Pago:</span>
+                                        <span className="font-semibold">{receiptData.paymentMethod}</span>
+                                    </div>
                                 </div>
 
                                 {/* Detalle de Productos */}

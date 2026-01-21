@@ -1,4 +1,4 @@
-import { ShoppingBag, Plus, Search, Grid3x3, Table2, TrendingUp, Edit, Trash2, Eye, DollarSign, Package, X, Save } from 'lucide-react';
+import { ShoppingBag, Plus, Search, Grid3x3, Table2, TrendingUp, Edit, Trash2, Eye, DollarSign, Package, X, Save, Trophy } from 'lucide-react';
 import { useState } from 'react';
 import PageTransition from '@/components/layout/PageTransition';
 import { useExchangeRate } from '@/contexts/ExchangeRateContext';
@@ -101,6 +101,7 @@ const ProductosMenu = () => {
     const totalProducts = mockProducts.length;
     const totalSales = mockProducts.reduce((sum, p) => sum + p.sales, 0);
     const avgPrice = mockProducts.reduce((sum, p) => sum + p.priceUSD, 0) / mockProducts.length;
+    const mostSoldProduct = mockProducts.reduce((max, p) => p.sales > max.sales ? p : max, mockProducts[0]);
 
     // CRUD Handlers
     const handleViewDetails = (product: MenuProduct) => {
@@ -158,7 +159,7 @@ const ProductosMenu = () => {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     <div className="bg-blue-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
                         <div className="flex justify-between items-start mb-2">
                             <p className="text-xs font-medium text-white/90 uppercase tracking-wide">Total Productos</p>
@@ -190,6 +191,17 @@ const ProductosMenu = () => {
                         </div>
                         <p className="text-2xl font-bold text-white">${avgPrice.toFixed(2)}</p>
                         <p className="text-xs text-white/70 mt-1">{formatBs(convert(avgPrice))}</p>
+                    </div>
+
+                    <div className="bg-amber-500 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow text-white">
+                        <div className="flex justify-between items-start mb-2">
+                            <p className="text-xs font-medium text-white/90 uppercase tracking-wide">Más Vendido</p>
+                            <div className="p-2 bg-amber-600 rounded-full flex items-center justify-center">
+                                <Trophy className="w-5 h-5 text-white" />
+                            </div>
+                        </div>
+                        <p className="text-lg font-bold text-white line-clamp-1">{mostSoldProduct?.name || 'N/A'}</p>
+                        <p className="text-xs text-white/70 mt-1">{mostSoldProduct?.sales || 0} vendidos</p>
                     </div>
                 </div>
 
@@ -259,68 +271,83 @@ const ProductosMenu = () => {
                 {/* Products View */}
                 {viewMode === 'cards' ? (
                     <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                             {paginatedProducts.map((product, idx) => (
                                 <div
                                     key={product.id}
                                     style={{ animationDelay: `${idx * 50}ms` }}
-                                    className="bg-card border border-border rounded-xl hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 group overflow-hidden animate-in fade-in slide-in-from-bottom-4"
+                                    className="bg-card border border-border rounded-xl hover:shadow-xl transition-all duration-300 group overflow-hidden animate-in fade-in slide-in-from-bottom-4"
                                 >
                                     {/* Product Image */}
-                                    <div className="relative h-44 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 overflow-hidden">
+                                    <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 overflow-hidden">
                                         <img
                                             src={product.image}
                                             alt={product.name}
-                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         />
-                                        {/* Overlay más oscuro para reducir conflicto con texto de la imagen */}
-                                        <div className="absolute inset-0 bg-black/75" />
-                                        <div className="absolute top-3 right-3 bg-primary text-primary-foreground text-xs px-3 py-1.5 rounded-full font-bold shadow-xl">
-                                            {product.sales} ventas
-                                        </div>
+                                        {/* Dark overlay reducido */}
+                                        <div className="absolute inset-0 bg-black/40" />
+
+                                        {/* Category Badge - bottom left */}
                                         <div className="absolute bottom-3 left-3">
-                                            <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md text-white text-xs font-bold rounded-full shadow-lg border border-white/40">
+                                            <span className="inline-block px-3 py-1 bg-muted/90 backdrop-blur-sm text-foreground text-xs font-semibold rounded-full shadow-lg">
                                                 {product.category}
+                                            </span>
+                                        </div>
+
+                                        {/* Sales Badge - top right */}
+                                        <div className="absolute top-3 right-3">
+                                            <span className="inline-block px-3 py-1.5 bg-orange-500 text-white text-xs font-bold rounded-full shadow-lg">
+                                                {product.sales} ventas
                                             </span>
                                         </div>
                                     </div>
 
                                     {/* Card Content */}
-                                    <div className="p-4">
-                                        <div className="mb-3">
-                                            <h3 className="text-base font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-1">{product.name}</h3>
-                                            <p className="text-xs text-muted-foreground line-clamp-2">{product.description}</p>
+                                    <div className="p-4 space-y-3">
+                                        {/* Product Title & Description */}
+                                        <div>
+                                            <h3 className="text-base font-bold text-foreground line-clamp-1 mb-1">
+                                                {product.name}
+                                            </h3>
+                                            <p className="text-xs text-muted-foreground line-clamp-2 min-h-[2.5rem]">
+                                                {product.description}
+                                            </p>
                                         </div>
 
-                                        <div className="space-y-3 pt-3 border-t border-border">
-                                            <div className="flex items-baseline justify-between">
-                                                <span className="text-xl font-bold text-primary">${product.priceUSD.toFixed(2)}</span>
-                                                <span className="text-xs text-muted-foreground">{formatBs(convert(product.priceUSD))}</span>
-                                            </div>
+                                        {/* Price Section */}
+                                        <div className="flex items-baseline justify-between pt-2 border-t border-border">
+                                            <span className="text-2xl font-bold text-orange-500">
+                                                ${product.priceUSD.toFixed(2)}
+                                            </span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {formatBs(convert(product.priceUSD))}
+                                            </span>
+                                        </div>
 
-                                            <div className="flex gap-1.5">
-                                                <button
-                                                    onClick={() => handleViewDetails(product)}
-                                                    className="flex-1 p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 rounded-lg transition-all hover:scale-105 active:scale-95"
-                                                    title="Ver detalles"
-                                                >
-                                                    <Eye className="w-4 h-4 mx-auto" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleEditClick(product)}
-                                                    className="flex-1 p-2 hover:bg-green-50 dark:hover:bg-green-900/20 text-green-600 rounded-lg transition-all hover:scale-105 active:scale-95"
-                                                    title="Editar"
-                                                >
-                                                    <Edit className="w-4 h-4 mx-auto" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteClick(product)}
-                                                    className="flex-1 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 rounded-lg transition-all hover:scale-105 active:scale-95"
-                                                    title="Eliminar"
-                                                >
-                                                    <Trash2 className="w-4 h-4 mx-auto" />
-                                                </button>
-                                            </div>
+                                        {/* Action Buttons */}
+                                        <div className="flex gap-2 pt-2">
+                                            <button
+                                                onClick={() => handleViewDetails(product)}
+                                                className="flex-1 p-2.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5"
+                                                title="Ver detalles"
+                                            >
+                                                <Eye className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleEditClick(product)}
+                                                className="flex-1 p-2.5 hover:bg-green-50 dark:hover:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5"
+                                                title="Editar"
+                                            >
+                                                <Edit className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteClick(product)}
+                                                className="flex-1 p-2.5 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5"
+                                                title="Eliminar"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
                                         </div>
                                     </div>
                                 </div>

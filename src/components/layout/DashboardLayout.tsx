@@ -42,7 +42,10 @@ const DashboardLayout = ({ title }: DashboardLayoutProps) => {
       <div className="flex flex-col h-screen overflow-hidden">
         <Navbar />
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-20 lg:pb-8 scroll-smooth">
+        <main
+          className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 md:pb-6 lg:pb-8 scroll-smooth"
+          style={{ paddingBottom: 'max(1.5rem, calc(5rem + env(safe-area-inset-bottom, 0px)))' }}
+        >
           <Outlet />
         </main>
       </div>

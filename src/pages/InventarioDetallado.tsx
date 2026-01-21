@@ -391,7 +391,7 @@ const InventarioDetallado = () => {
           </div>
 
           {/* Stats Cards (Only visible when location is selected) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             <div className="bg-card p-4 rounded-xl border border-border flex items-center gap-4">
               <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-lg">
                 <Box className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -418,7 +418,7 @@ const InventarioDetallado = () => {
               </div>
             </div>
 
-            <div className="bg-card p-4 rounded-xl border border-border flex items-center gap-4">
+            <div className="bg-card p-4 rounded-xl border border-border flex items-center gap-4 col-span-2 md:col-span-1">
               <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-lg">
                 <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
               </div>
@@ -460,8 +460,8 @@ const InventarioDetallado = () => {
                   <button
                     onClick={() => setViewMode('table')}
                     className={`flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-sm transition-colors flex items-center justify-center gap-2 ${viewMode === 'table'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-background text-foreground hover:bg-secondary'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-background text-foreground hover:bg-secondary'
                       }`}
                   >
                     <Table2 className="w-4 h-4" />
@@ -470,8 +470,8 @@ const InventarioDetallado = () => {
                   <button
                     onClick={() => setViewMode('cards')}
                     className={`flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-sm transition-colors flex items-center justify-center gap-2 ${viewMode === 'cards'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-background text-foreground hover:bg-secondary'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-background text-foreground hover:bg-secondary'
                       }`}
                   >
                     <Grid3x3 className="w-4 h-4" />
@@ -801,8 +801,8 @@ const InventarioDetallado = () => {
                       key={page}
                       onClick={() => setCurrentPage(page)}
                       className={`px-3 py-1 rounded text-sm ${currentPage === page
-                          ? 'bg-primary text-primary-foreground'
-                          : 'border border-border hover:bg-secondary'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'border border-border hover:bg-secondary'
                         }`}
                     >
                       {page}
@@ -967,8 +967,8 @@ const InventarioDetallado = () => {
                         key={page}
                         onClick={() => setCurrentPage(page)}
                         className={`px-3 py-1 rounded text-sm ${currentPage === page
-                            ? 'bg-primary text-primary-foreground'
-                            : 'border border-border hover:bg-secondary'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'border border-border hover:bg-secondary'
                           }`}
                       >
                         {page}
@@ -1169,8 +1169,8 @@ const InventarioDetallado = () => {
                   <button
                     onClick={() => setLocationViewMode('list')}
                     className={`px-4 py-2 text-sm transition-colors flex items-center justify-center gap-2 ${locationViewMode === 'list'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-background text-foreground hover:bg-secondary'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-background text-foreground hover:bg-secondary'
                       }`}
                   >
                     <List className="w-4 h-4" />
@@ -1179,8 +1179,8 @@ const InventarioDetallado = () => {
                   <button
                     onClick={() => setLocationViewMode('cards')}
                     className={`px-4 py-2 text-sm transition-colors flex items-center justify-center gap-2 ${locationViewMode === 'cards'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-background text-foreground hover:bg-secondary'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-background text-foreground hover:bg-secondary'
                       }`}
                   >
                     <Grid3x3 className="w-4 h-4" />

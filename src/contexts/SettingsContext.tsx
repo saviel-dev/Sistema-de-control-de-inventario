@@ -56,11 +56,22 @@ const defaultNotifications: NotificationPreferences = {
   productosVencer: true,
 };
 
+const NAVIGATION_TYPE_KEY = 'app_navigation_type';
+
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   const [businessInfo, setBusinessInfo] = useState<BusinessInfo>(defaultBusinessInfo);
   const [notifications, setNotifications] = useState<NotificationPreferences>(defaultNotifications);
-  const [navigationType, setNavigationType] = useState<NavigationType>('sidebar');
+
+  // Inicializar desde localStorage primero (preferencia por dispositivo)
+  const [navigationType, setNavigationType] = useState<NavigationType>(() => {
+    const saved = localStorage.getItem(NAVIGATION_TYPE_KEY);
+    if (saved === 'sidebar' || saved === 'navbar') {
+      return saved;
+    }
+    return 'sidebar';
+  });
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,12 +111,16 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setNotifications(defaultNotifications);
       }
 
-      // Parsear tipo de navegación
-      const navTypeConfig = configMap.get('interfaz_tipo_navegacion');
-      if (navTypeConfig && navTypeConfig.valor) {
-        const navType = navTypeConfig.valor as NavigationType;
-        if (navType === 'sidebar' || navType === 'navbar') {
-          setNavigationType(navType);
+      // Parsear tipo de navegación (solo si no hay preferencia local)
+      const localNavType = localStorage.getItem(NAVIGATION_TYPE_KEY);
+      if (!localNavType) {
+        const navTypeConfig = configMap.get('interfaz_tipo_navegacion');
+        if (navTypeConfig && navTypeConfig.valor) {
+          const navType = navTypeConfig.valor as NavigationType;
+          if (navType === 'sidebar' || navType === 'navbar') {
+            setNavigationType(navType);
+            localStorage.setItem(NAVIGATION_TYPE_KEY, navType);
+          }
         }
       }
     } catch (err) {
@@ -133,9 +148,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setNotifications(prev => ({ ...prev, ...preferences }));
   }, []);
 
-  // Actualizar tipo de navegación (solo en memoria)
+  // Actualizar tipo de navegación (en memoria y localStorage)
   const updateNavigationType = useCallback((type: NavigationType) => {
     setNavigationType(type);
+    localStorage.setItem(NAVIGATION_TYPE_KEY, type);
   }, []);
 
   // Guardar todas las configuraciones en la base de datos
