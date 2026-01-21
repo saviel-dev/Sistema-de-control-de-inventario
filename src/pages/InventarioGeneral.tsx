@@ -62,7 +62,7 @@ const InventarioGeneral = () => {
     unit: 'Unidades',
     status: 'available'
   });
-  
+
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
@@ -78,7 +78,7 @@ const InventarioGeneral = () => {
 
   const handleUpdateProduct = async () => {
     if (!editingProduct || !editingProduct.name) return;
-    
+
     if ((editingProduct.stock || 0) <= 0) {
       toast.error("La cantidad debe ser mayor a 0");
       return;
@@ -160,7 +160,7 @@ const InventarioGeneral = () => {
     setExporting(true);
     try {
       const { generateProductListPDF, generateProductListExcel } = await import('@/utils/report-export.utils');
-      
+
       if (type === 'pdf') {
         await generateProductListPDF(filteredProducts);
         toast.success("Reporte PDF generado exitosamente");
@@ -215,13 +215,13 @@ const InventarioGeneral = () => {
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <Package className="w-7 h-7 text-primary" />
-              Inventario General
+              Insumos Generales
             </h1>
             <p className="text-muted-foreground text-sm mt-1">Gestión completa de productos y stock</p>
           </div>
           <div className="flex gap-2">
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setExportMenuOpen(!exportMenuOpen)}
                 disabled={exporting}
                 className="px-4 py-2 bg-background border border-border rounded-lg text-sm hover:bg-secondary transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed text-foreground"
@@ -239,7 +239,7 @@ const InventarioGeneral = () => {
                   </>
                 )}
               </button>
-              
+
               {exportMenuOpen && !exporting && (
                 <div className="absolute right-0 mt-2 w-56 bg-popover border border-border rounded-lg shadow-lg z-10 overflow-hidden">
                   <button
@@ -339,22 +339,20 @@ const InventarioGeneral = () => {
               <div className="flex gap-2 border border-border rounded-lg overflow-hidden">
                 <button
                   onClick={() => setViewMode('table')}
-                  className={`flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-sm transition-colors flex items-center justify-center gap-2 ${
-                    viewMode === 'table'
+                  className={`flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-sm transition-colors flex items-center justify-center gap-2 ${viewMode === 'table'
                       ? 'bg-blue-500 text-white'
                       : 'bg-background text-foreground hover:bg-secondary'
-                  }`}
+                    }`}
                 >
                   <Table2 className="w-4 h-4" />
                   <span className="hidden sm:inline">Tabla</span>
                 </button>
                 <button
                   onClick={() => setViewMode('cards')}
-                  className={`flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-sm transition-colors flex items-center justify-center gap-2 ${
-                    viewMode === 'cards'
+                  className={`flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-sm transition-colors flex items-center justify-center gap-2 ${viewMode === 'cards'
                       ? 'bg-blue-500 text-white'
                       : 'bg-background text-foreground hover:bg-secondary'
-                  }`}
+                    }`}
                 >
                   <Grid3x3 className="w-4 h-4" />
                   <span className="hidden sm:inline">Tarjetas</span>
@@ -434,13 +432,13 @@ const InventarioGeneral = () => {
                 </tbody>
               </table>
             </div>
-            
+
             <div className="p-4 border-t border-border flex justify-between items-center">
               <p className="text-sm text-muted-foreground">
                 Mostrando {filteredProducts.length > 0 ? startIndex + 1 : 0} - {endIndex} de {filteredProducts.length} productos
               </p>
               <div className="flex gap-2">
-                <button 
+                <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                   className="px-3 py-1 border border-border rounded hover:bg-secondary text-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -451,16 +449,15 @@ const InventarioGeneral = () => {
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-1 rounded text-sm ${
-                      currentPage === page
+                    className={`px-3 py-1 rounded text-sm ${currentPage === page
                         ? 'bg-primary text-primary-foreground'
                         : 'border border-border hover:bg-secondary'
-                    }`}
+                      }`}
                   >
                     {page}
                   </button>
                 ))}
-                <button 
+                <button
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages || totalPages === 0}
                   className="px-3 py-1 border border-border rounded hover:bg-secondary text-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -474,15 +471,15 @@ const InventarioGeneral = () => {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {paginatedProducts.map((product) => (
-                <div  
-                  key={product.id} 
+                <div
+                  key={product.id}
                   className="bg-card border border-border rounded-xl hover:shadow-lg transition-all duration-300 group relative"
                 >
                   {/* Product Image */}
                   <div className="relative h-32 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden rounded-t-xl">
                     {product.image ? (
-                      <img 
-                        src={product.image} 
+                      <img
+                        src={product.image}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
@@ -495,23 +492,23 @@ const InventarioGeneral = () => {
 
                   {/* Actions Menu */}
                   <div className="absolute top-3 right-3 z-10">
-                    <button 
+                    <button
                       onClick={() => setOpenDropdown(openDropdown === product.id ? null : product.id)}
                       className="p-2 bg-background/90 backdrop-blur-sm rounded-lg text-foreground hover:bg-background transition-colors shadow-md"
                     >
                       <MoreVertical className="w-4 h-4" />
                     </button>
-                    
+
                     {/* Dropdown Menu */}
                     {openDropdown === product.id && (
                       <>
-                        <div 
-                          className="fixed inset-0 z-10" 
+                        <div
+                          className="fixed inset-0 z-10"
                           onClick={() => setOpenDropdown(null)}
                         />
                         <div className="absolute right-0 mt-2 w-48 bg-popover text-popover-foreground rounded-lg shadow-lg border border-border z-20 overflow-hidden">
                           <button
-                              onClick={() => {
+                            onClick={() => {
                               handleViewDetails(product);
                               setOpenDropdown(null);
                             }}
@@ -575,7 +572,7 @@ const InventarioGeneral = () => {
                           <span className="text-xs text-muted-foreground">{formatBs(convert(product.price))}</span>
                         </div>
                       </div>
-                      
+
                       {/* Status Badge */}
                       <div className="flex items-center justify-between pt-3 border-t border-border">
                         <span className="text-sm text-muted-foreground">Estado</span>
@@ -588,7 +585,7 @@ const InventarioGeneral = () => {
                 </div>
               ))}
             </div>
-            
+
             {/* Pagination */}
             <div className="mt-6 bg-card rounded-xl shadow-sm p-4">
               <div className="flex justify-between items-center">
@@ -596,7 +593,7 @@ const InventarioGeneral = () => {
                   Mostrando {filteredProducts.length > 0 ? startIndex + 1 : 0} - {endIndex} de {filteredProducts.length} productos
                 </p>
                 <div className="flex gap-2">
-                  <button 
+                  <button
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
                     className="px-3 py-1 border border-border rounded hover:bg-secondary text-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -607,16 +604,15 @@ const InventarioGeneral = () => {
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`px-3 py-1 rounded text-sm ${
-                        currentPage === page
+                      className={`px-3 py-1 rounded text-sm ${currentPage === page
                           ? 'bg-primary text-primary-foreground'
                           : 'border border-border hover:bg-secondary'
-                      }`}
+                        }`}
                     >
                       {page}
                     </button>
                   ))}
-                  <button 
+                  <button
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages || totalPages === 0}
                     className="px-3 py-1 border border-border rounded hover:bg-secondary text-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -742,9 +738,9 @@ const InventarioGeneral = () => {
                   ref={fileInputRef}
                   onChange={handleImageChange}
                 />
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   className="w-full flex items-center gap-2"
                   onClick={() => fileInputRef.current?.click()}
                 >
@@ -777,8 +773,8 @@ const InventarioGeneral = () => {
             <Button variant="outline" onClick={() => setProductToDelete(null)}>
               Cancelar
             </Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={() => {
                 if (productToDelete) {
                   deleteProduct(productToDelete);
@@ -801,120 +797,120 @@ const InventarioGeneral = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-             {/* Fields similar to Add Product but using editingProduct state */}
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-name">Nombre</Label>
-                <Input
-                  id="edit-name"
-                  value={editingProduct?.name || ''}
-                  onChange={(e) => setEditingProduct(prev => prev ? { ...prev, name: e.target.value } : null)}
-                />
+            {/* Fields similar to Add Product but using editingProduct state */}
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-name">Nombre</Label>
+                  <Input
+                    id="edit-name"
+                    value={editingProduct?.name || ''}
+                    onChange={(e) => setEditingProduct(prev => prev ? { ...prev, name: e.target.value } : null)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-category">Categoría</Label>
+                  <Input
+                    id="edit-category"
+                    value={editingProduct?.category || ''}
+                    onChange={(e) => setEditingProduct(prev => prev ? { ...prev, category: e.target.value } : null)}
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-category">Categoría</Label>
-                <Input
-                  id="edit-category"
-                  value={editingProduct?.category || ''}
-                  onChange={(e) => setEditingProduct(prev => prev ? { ...prev, category: e.target.value } : null)}
-                />
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-price">Precio</Label>
-                <Input
-                  id="edit-price"
-                  type="number"
-                  min={1}
-                  value={editingProduct?.price || ''}
-                  onChange={(e) => {
-                    const val = parseFloat(e.target.value);
-                    if (val < 0) return;
-                    setEditingProduct(prev => prev ? { ...prev, price: e.target.value === '' ? undefined : val } : null);
-                  }}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-price">Precio</Label>
+                  <Input
+                    id="edit-price"
+                    type="number"
+                    min={1}
+                    value={editingProduct?.price || ''}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      if (val < 0) return;
+                      setEditingProduct(prev => prev ? { ...prev, price: e.target.value === '' ? undefined : val } : null);
+                    }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-stock">Stock</Label>
+                  <Input
+                    id="edit-stock"
+                    type="number"
+                    min={1}
+                    value={editingProduct?.stock || ''}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      if (val < 0) return;
+                      setEditingProduct(prev => prev ? { ...prev, stock: e.target.value === '' ? undefined : val } : null);
+                    }}
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-stock">Stock</Label>
-                <Input
-                  id="edit-stock"
-                  type="number"
-                  min={1}
-                  value={editingProduct?.stock || ''}
-                  onChange={(e) => {
-                    const val = parseFloat(e.target.value);
-                    if (val < 0) return;
-                    setEditingProduct(prev => prev ? { ...prev, stock: e.target.value === '' ? undefined : val } : null);
-                  }}
-                />
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-unit">Unidad</Label>
-                <Select 
-                  value={editingProduct?.unit} 
-                  onValueChange={(val) => setEditingProduct(prev => prev ? { ...prev, unit: val } : null)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona una unidad" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Unidades">Unidades</SelectItem>
-                    <SelectItem value="Kg">Kg</SelectItem>
-                    <SelectItem value="Litros">Litros</SelectItem>
-                    <SelectItem value="Paquetes">Paquetes</SelectItem>
-                    <SelectItem value="Bolsas">Bolsas</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-unit">Unidad</Label>
+                  <Select
+                    value={editingProduct?.unit}
+                    onValueChange={(val) => setEditingProduct(prev => prev ? { ...prev, unit: val } : null)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una unidad" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Unidades">Unidades</SelectItem>
+                      <SelectItem value="Kg">Kg</SelectItem>
+                      <SelectItem value="Litros">Litros</SelectItem>
+                      <SelectItem value="Paquetes">Paquetes</SelectItem>
+                      <SelectItem value="Bolsas">Bolsas</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-minStock">Min. Stock</Label>
+                  <Input
+                    id="edit-minStock"
+                    type="number"
+                    min={1}
+                    value={editingProduct?.minStock || ''}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      if (val < 0) return;
+                      setEditingProduct(prev => prev ? { ...prev, minStock: e.target.value === '' ? undefined : val } : null);
+                    }}
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-minStock">Min. Stock</Label>
-                <Input
-                  id="edit-minStock"
-                  type="number"
-                  min={1}
-                  value={editingProduct?.minStock || ''}
-                  onChange={(e) => {
-                    const val = parseFloat(e.target.value);
-                    if (val < 0) return;
-                    setEditingProduct(prev => prev ? { ...prev, minStock: e.target.value === '' ? undefined : val } : null);
-                  }}
-                />
-              </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="edit-image">Foto</Label>
-              <div className="flex items-center gap-4">
-                <Input
-                  id="edit-image"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageChange}
-                  ref={fileInputRef}
-                />
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                   className="w-full flex items-center gap-2"
-                   onClick={() => fileInputRef.current?.click()}
-                >
-                  <Plus className="w-4 h-4" /> Cambiar Imagen
-                </Button>
-                 {imagePreview && (
-                  <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-border">
-                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                  </div>
-                )}
+              <div className="space-y-2">
+                <Label htmlFor="edit-image">Foto</Label>
+                <div className="flex items-center gap-4">
+                  <Input
+                    id="edit-image"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageChange}
+                    ref={fileInputRef}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full flex items-center gap-2"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Plus className="w-4 h-4" /> Cambiar Imagen
+                  </Button>
+                  {imagePreview && (
+                    <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-border">
+                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="secondary" onClick={() => setEditingProduct(null)}>Cancelar</Button>
@@ -941,42 +937,42 @@ const InventarioGeneral = () => {
                   <p className="font-medium text-lg">{viewingProduct?.name}</p>
                 </div>
                 <div>
-                   <Label className="text-xs text-muted-foreground">Categoría</Label>
+                  <Label className="text-xs text-muted-foreground">Categoría</Label>
                   <p className="font-medium">{viewingProduct?.category}</p>
                 </div>
               </div>
-               <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-xs text-muted-foreground">Stock Actual</Label>
-                   <p className={`font-bold text-lg ${viewingProduct?.status === 'low' || viewingProduct?.status === 'out' ? 'text-destructive' : 'text-success'}`}>
+                  <p className={`font-bold text-lg ${viewingProduct?.status === 'low' || viewingProduct?.status === 'out' ? 'text-destructive' : 'text-success'}`}>
                     {viewingProduct?.stock} {viewingProduct?.unit}
                   </p>
                 </div>
                 <div>
-                   <Label className="text-xs text-muted-foreground">Stock Mínimo</Label>
+                  <Label className="text-xs text-muted-foreground">Stock Mínimo</Label>
                   <p className="font-medium">{viewingProduct?.minStock} {viewingProduct?.unit}</p>
                 </div>
               </div>
-               <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-xs text-muted-foreground">Precio</Label>
                   <p className="font-bold text-lg">${viewingProduct?.price}</p>
-                   <p className="text-sm text-muted-foreground">{formatBs(convert(viewingProduct?.price || 0))}</p>
+                  <p className="text-sm text-muted-foreground">{formatBs(convert(viewingProduct?.price || 0))}</p>
                 </div>
                 <div>
-                   <Label className="text-xs text-muted-foreground">Estado</Label>
-                   <div className="mt-1">
+                  <Label className="text-xs text-muted-foreground">Estado</Label>
+                  <div className="mt-1">
                     {viewingProduct && (
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusConfig[viewingProduct.status].className}`}>
                         {statusConfig[viewingProduct.status].label}
                       </span>
                     )}
-                   </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-           <DialogFooter>
+          <DialogFooter>
             <Button type="button" onClick={() => setViewingProduct(null)}>Cerrar</Button>
           </DialogFooter>
         </DialogContent>

@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,7 +17,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Bell,
-  HelpCircle,
+  ShoppingBag,
+  CreditCard,
+  ChevronDown,
+  Store,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -27,17 +30,25 @@ interface SidebarProps {
   onToggleCollapse: () => void;
 }
 
-const navItems = [
+const simpleNavItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard", tourId: "dashboard-link" },
-  { to: "/inventario-general", icon: Package, label: "Inventario General", tourId: "inventario-general-link" },
+  { to: "/movimientos", icon: ArrowLeftRight, label: "Movimientos", tourId: "movimientos-link" },
+  { to: "/reportes", icon: BarChart3, label: "Reportes", tourId: "reportes-link" },
+];
+
+const insumosSubmenu = [
+  { to: "/inventario-general", icon: Package, label: "Insumos Generales", tourId: "inventario-general-link" },
   {
     to: "/inventario-detallado",
     icon: ClipboardList,
-    label: "Inventario Detallado",
+    label: "Insumos Detallados",
     tourId: "inventario-detallado-link"
   },
-  { to: "/movimientos", icon: ArrowLeftRight, label: "Movimientos", tourId: "movimientos-link" },
-  { to: "/reportes", icon: BarChart3, label: "Reportes", tourId: "reportes-link" },
+];
+
+const negocioSubmenu = [
+  { to: "/productos-menu", icon: ShoppingBag, label: "Productos", tourId: "productos-menu-link" },
+  { to: "/punto-venta", icon: CreditCard, label: "POS", tourId: "punto-venta-link" },
 ];
 
 const systemItems = [
@@ -49,8 +60,10 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProp
   const { user } = useAuth();
   const { configuracion } = useConfiguracion('sistema.nombre');
   const { unreadCount } = useNotifications();
-  const { startTour } = useTour();
+  const location = useLocation();
   const [activeTooltip, setActiveTooltip] = useState<{ label: string; top: number; left: number; badge?: number } | null>(null);
+  const [insumosExpanded, setInsumosExpanded] = useState(false);
+  const [negocioExpanded, setNegocioExpanded] = useState(false);
 
   const handleMouseEnter = (e: React.MouseEvent, label: string, badge?: number) => {
     if (!isCollapsed) return;
@@ -71,18 +84,16 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProp
     <>
       {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-foreground/50 z-20 md:hidden transition-opacity ${
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 bg-foreground/50 z-20 md:hidden transition-opacity ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
         onClick={onClose}
       />
 
       {/* Sidebar */}
       <aside
         data-tour="sidebar"
-        className={`bg-sidebar text-sidebar-foreground ${isCollapsed ? 'w-16' : 'w-56'} flex-shrink-0 fixed md:relative h-full z-30 transform transition-all duration-300 ease-in-out flex flex-col shadow-2xl ${
-          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        }`}
+        className={`bg-sidebar text-sidebar-foreground ${isCollapsed ? 'w-16' : 'w-56'} flex-shrink-0 fixed md:relative h-full z-30 transform transition-all duration-300 ease-in-out flex flex-col shadow-2xl ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+          }`}
       >
         {/* Logo Area */}
         <div className="p-4 flex items-center justify-between border-b border-sidebar-border">
@@ -101,7 +112,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProp
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4">
           <ul className="space-y-2 px-3">
-            {navItems.map((item) => (
+            {simpleNavItems.map((item) => (
               <li key={item.to}>
                 <NavLink
                   to={item.to}
@@ -110,10 +121,9 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProp
                   onMouseLeave={handleMouseLeave}
                   data-tour={item.tourId}
                   className={({ isActive }) =>
-                    `flex items-center ${isCollapsed ? 'justify-center' : 'gap-2'} px-3 py-2 text-sm rounded-lg font-medium transition-colors duration-200 group ${
-                      isActive
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    `flex items-center ${isCollapsed ? 'justify-center' : 'gap-2'} px-3 py-2 text-sm rounded-lg font-medium transition-colors duration-200 group ${isActive
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     }`
                   }
                 >
@@ -123,6 +133,134 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProp
               </li>
             ))}
 
+            {/* Insumos Dropdown */}
+            <li>
+              {!isCollapsed ? (
+                // Expanded sidebar - collapsible menu
+                <div>
+                  <button
+                    onClick={() => setInsumosExpanded(!insumosExpanded)}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg font-medium transition-colors duration-200 ${location.pathname.includes('/inventario')
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      }`}
+                  >
+                    <Package className="w-5 h-5" />
+                    <span className="flex-1 text-left">Insumos</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform ${insumosExpanded ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {insumosExpanded && (
+                    <div className="ml-4 mt-1 space-y-1">
+                      {insumosSubmenu.map((item) => (
+                        <NavLink
+                          key={item.to}
+                          to={item.to}
+                          onClick={onClose}
+                          data-tour={item.tourId}
+                          className={({ isActive }) =>
+                            `flex items-center gap-2 px-3 py-2 text-sm rounded-lg font-medium transition-colors duration-200 ${isActive
+                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                              : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                            }`
+                          }
+                        >
+                          <item.icon className="w-4 h-4" />
+                          <span>{item.label}</span>
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // Collapsed sidebar - tooltip with submenu
+                <div
+                  onMouseEnter={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setActiveTooltip({
+                      label: 'Insumos',
+                      top: rect.top,
+                      left: rect.right + 10,
+                    });
+                  }}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  <div
+                    className={`flex items-center justify-center px-3 py-2 text-sm rounded-lg font-medium transition-colors duration-200 cursor-pointer ${location.pathname.includes('/inventario')
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      }`}
+                  >
+                    <Package className="w-5 h-5" />
+                  </div>
+                </div>
+              )}
+            </li>
+
+            {/* Negocio Dropdown */}
+            <li>
+              {!isCollapsed ? (
+                // Expanded sidebar - collapsible menu
+                <div>
+                  <button
+                    onClick={() => setNegocioExpanded(!negocioExpanded)}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg font-medium transition-colors duration-200 ${location.pathname.includes('/productos-menu') || location.pathname.includes('/punto-venta')
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      }`}
+                  >
+                    <Store className="w-5 h-5" />
+                    <span className="flex-1 text-left">Negocio</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform ${negocioExpanded ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {negocioExpanded && (
+                    <div className="ml-4 mt-1 space-y-1">
+                      {negocioSubmenu.map((item) => (
+                        <NavLink
+                          key={item.to}
+                          to={item.to}
+                          onClick={onClose}
+                          data-tour={item.tourId}
+                          className={({ isActive }) =>
+                            `flex items-center gap-2 px-3 py-2 text-sm rounded-lg font-medium transition-colors duration-200 ${isActive
+                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                              : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                            }`
+                          }
+                        >
+                          <item.icon className="w-4 h-4" />
+                          <span>{item.label}</span>
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // Collapsed sidebar - tooltip
+                <div
+                  onMouseEnter={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setActiveTooltip({
+                      label: 'Negocio',
+                      top: rect.top,
+                      left: rect.right + 10,
+                    });
+                  }}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  <div
+                    className={`flex items-center justify-center px-3 py-2 text-sm rounded-lg font-medium transition-colors duration-200 cursor-pointer ${location.pathname.includes('/productos-menu') || location.pathname.includes('/punto-venta')
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      }`}
+                  >
+                    <Store className="w-5 h-5" />
+                  </div>
+                </div>
+              )}
+            </li>
+
             {!isCollapsed && (
               <li className="pt-4 mt-4 border-t border-sidebar-border">
                 <span className="px-4 text-xs font-semibold text-muted-foreground uppercase">
@@ -131,18 +269,6 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProp
               </li>
             )}
 
-            {/* Tour Button */}
-            <li className={isCollapsed ? 'mt-4 pt-4 border-t border-sidebar-border' : ''}>
-              <button
-                onClick={startTour}
-                onMouseEnter={(e) => handleMouseEnter(e, "Cómo usar")}
-                onMouseLeave={handleMouseLeave}
-                className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-2'} px-3 py-2 text-sm rounded-lg font-medium transition-colors duration-200 group text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`}
-              >
-                <HelpCircle className="w-5 h-5" />
-                {!isCollapsed && <span>Cómo usar</span>}
-              </button>
-            </li>
 
             {systemItems.map((item) => (
               <li key={item.to}>
@@ -153,10 +279,9 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProp
                   onMouseLeave={handleMouseLeave}
                   data-tour={item.tourId}
                   className={({ isActive }) =>
-                    `flex items-center ${isCollapsed ? 'justify-center' : 'gap-2'} px-3 py-2 text-sm rounded-lg font-medium transition-colors duration-200 group relative ${
-                      isActive
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    `flex items-center ${isCollapsed ? 'justify-center' : 'gap-2'} px-3 py-2 text-sm rounded-lg font-medium transition-colors duration-200 group relative ${isActive
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     }`
                   }
                 >
@@ -218,10 +343,10 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProp
 
       {/* Tooltip Portal */}
       {activeTooltip && isCollapsed && createPortal(
-        <div 
+        <div
           className="fixed px-3 py-1.5 bg-sidebar-accent text-sidebar-accent-foreground text-sm font-medium rounded-lg shadow-lg z-[9999] pointer-events-none animate-in fade-in zoom-in-95 duration-200 flex items-center gap-2"
-          style={{ 
-            top: activeTooltip.top, 
+          style={{
+            top: activeTooltip.top,
             left: activeTooltip.left,
           }}
         >

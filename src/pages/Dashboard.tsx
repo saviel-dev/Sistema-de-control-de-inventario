@@ -1,19 +1,22 @@
-import { AlertTriangle, TrendingUp, Coins, Package, Loader2 } from 'lucide-react';
+import { AlertTriangle, TrendingUp, Coins, Package, Loader2, Settings } from 'lucide-react';
 import StatCard from '@/components/dashboard/StatCard';
 import RecentMovements from '@/components/dashboard/RecentMovements';
 import PageTransition from '@/components/layout/PageTransition';
 import { useExchangeRate } from '@/contexts/ExchangeRateContext';
 import { useDashboard } from '@/contexts/DashboardContext';
+import { ExchangeRateModal } from '@/components/ExchangeRateModal';
+import { useState } from 'react';
 
 const Dashboard = () => {
-  const { rate, lastUpdated, isLoading: isRateLoading, formatBs, convert } = useExchangeRate();
+  const { rate, lastUpdated, isLoading: isRateLoading, formatBs, convert, tipoTasa, fuente } = useExchangeRate();
   const { stats, loading: isStatsLoading } = useDashboard();
+  const [modalOpen, setModalOpen] = useState(false);
 
   if (isStatsLoading) {
     return (
-        <div className="flex h-full w-full items-center justify-center min-h-[400px]">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+      <div className="flex h-full w-full items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
   }
 
@@ -25,20 +28,29 @@ const Dashboard = () => {
           title="Total Productos"
           value={`${stats.totalProducts}`}
           icon={Package}
-          status="En inventario general"
+          status="En insumos generales"
           bgColor="bg-blue-600"
           iconBgColor="bg-blue-700"
         />
         <StatCard
-          title="Tasa BCV"
+          title={tipoTasa === 'personalizada' ? 'Tasa Personalizada' : tipoTasa === 'paralelo' ? 'Dólar Paralelo' : 'Tasa BCV'}
           value={isRateLoading ? "Actualizando..." : `Bs. ${rate.toFixed(2)}`}
           icon={TrendingUp}
-          status={lastUpdated || "Consultando..."}
+          status={fuente ? `${fuente} - ${lastUpdated}` : lastUpdated || "Consultando..."}
           bgColor="bg-indigo-600"
           iconBgColor="bg-indigo-700"
+          action={
+            <button
+              onClick={() => setModalOpen(true)}
+              className="p-2 rounded-lg hover:bg-white/20 transition-colors"
+              title="Configurar tasa"
+            >
+              <Settings className="w-4 h-4 text-white" />
+            </button>
+          }
         />
         <StatCard
-          title="Valor Inventario"
+          title="Valor Insumos"
           value={`$${stats.totalValue.toLocaleString('es-VE', { minimumFractionDigits: 2 })}`}
           secondaryValue={formatBs(convert(stats.totalValue))}
           icon={Coins}
@@ -61,6 +73,13 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 gap-8 mb-8">
         <RecentMovements customData={stats.recentMovements} />
       </div>
+
+      {/* Exchange Rate Modal */}
+      <ExchangeRateModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        currentTasa={rate}
+      />
     </PageTransition>
   );
 };

@@ -1,7 +1,8 @@
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, HelpCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useTour } from "@/contexts/TourContext";
 
 
 interface HeaderProps {
@@ -11,6 +12,7 @@ interface HeaderProps {
 
 const Header = ({ title, onMenuClick }: HeaderProps) => {
   const { logout } = useAuth();
+  const { startTour } = useTour();
   const navigate = useNavigate();
 
 
@@ -47,6 +49,16 @@ const Header = ({ title, onMenuClick }: HeaderProps) => {
         </div>
 
 
+
+        {/* Tour Button */}
+        <button
+          onClick={startTour}
+          className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200"
+          title="Cómo usar"
+        >
+          <HelpCircle className="w-4 h-4" />
+          <span className="hidden md:inline">Cómo usar</span>
+        </button>
 
         {/* Logout Button */}
         <button

@@ -19,11 +19,15 @@ export interface NotificationPreferences {
   productosVencer: boolean;
 }
 
+// Tipo para el estilo de navegación
+export type NavigationType = 'sidebar' | 'navbar';
+
 // Tipo del contexto
 interface SettingsContextType {
   // Estado
   businessInfo: BusinessInfo;
   notifications: NotificationPreferences;
+  navigationType: NavigationType;
   loading: boolean;
   saving: boolean;
   error: string | null;
@@ -31,6 +35,7 @@ interface SettingsContextType {
   // Funciones
   updateBusinessInfo: (info: Partial<BusinessInfo>) => void;
   updateNotifications: (preferences: Partial<NotificationPreferences>) => void;
+  updateNavigationType: (type: NavigationType) => void;
   saveSettings: () => Promise<void>;
   refreshSettings: () => Promise<void>;
 }
@@ -55,6 +60,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const { user } = useAuth();
   const [businessInfo, setBusinessInfo] = useState<BusinessInfo>(defaultBusinessInfo);
   const [notifications, setNotifications] = useState<NotificationPreferences>(defaultNotifications);
+  const [navigationType, setNavigationType] = useState<NavigationType>('sidebar');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,6 +99,15 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       } else {
         setNotifications(defaultNotifications);
       }
+
+      // Parsear tipo de navegación
+      const navTypeConfig = configMap.get('interfaz_tipo_navegacion');
+      if (navTypeConfig && navTypeConfig.valor) {
+        const navType = navTypeConfig.valor as NavigationType;
+        if (navType === 'sidebar' || navType === 'navbar') {
+          setNavigationType(navType);
+        }
+      }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Error al cargar configuraciones';
       setError(errorMsg);
@@ -116,6 +131,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Actualizar preferencias de notificaciones (solo en memoria)
   const updateNotifications = useCallback((preferences: Partial<NotificationPreferences>) => {
     setNotifications(prev => ({ ...prev, ...preferences }));
+  }, []);
+
+  // Actualizar tipo de navegación (solo en memoria)
+  const updateNavigationType = useCallback((type: NavigationType) => {
+    setNavigationType(type);
   }, []);
 
   // Guardar todas las configuraciones en la base de datos
@@ -158,6 +178,15 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         categoria: 'notificaciones',
       });
 
+      // Guardar tipo de navegación
+      await configuracionService.guardar({
+        clave: 'interfaz_tipo_navegacion',
+        valor: navigationType,
+        tipo: 'texto',
+        descripcion: 'Tipo de navegación (sidebar o navbar)',
+        categoria: 'interfaz',
+      });
+
       toast.success('Configuración guardada exitosamente');
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Error al guardar configuración';
@@ -180,11 +209,13 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       value={{
         businessInfo,
         notifications,
+        navigationType,
         loading,
         saving,
         error,
         updateBusinessInfo,
         updateNotifications,
+        updateNavigationType,
         saveSettings,
         refreshSettings,
       }}

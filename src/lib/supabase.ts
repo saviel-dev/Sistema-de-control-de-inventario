@@ -26,6 +26,8 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   global: {
     headers: {
       "x-application-name": "gastroflow-manager",
+      "Accept": "application/json",
+      "Content-Type": "application/json",
     },
   },
 });

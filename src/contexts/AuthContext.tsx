@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     } else {
       checkSession();
-      
+
       // Escuchar cambios en autenticación
       const { data: { subscription } } = authService.onAuthStateChange((userData) => {
         setUser(userData);
@@ -71,8 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (DEV_MODE) {
         // ⚠️ MODO DESARROLLO: Login directo sin Supabase Auth
-        console.warn('⚠️ Usando modo de desarrollo - Autenticación simplificada');
-        
+
         // Buscar usuario directamente en la tabla usuarios
         const { data: userData, error: dbError } = await supabase
           .from('usuarios')
@@ -105,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Guardar en localStorage para persistencia
         localStorage.setItem('dev_user', JSON.stringify(authUser));
-        
+
         setUser(authUser);
         toast.success(`¡Bienvenido ${authUser.nombre}!`);
       } else {
@@ -139,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       setLoading(true);
-      
+
       if (DEV_MODE) {
         // Modo desarrollo: solo limpiar localStorage
         localStorage.removeItem('dev_user');

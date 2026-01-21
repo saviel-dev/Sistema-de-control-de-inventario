@@ -24,7 +24,7 @@ export const tourSteps: DriveStep[] = [
   {
     element: '[data-tour="inventario-general-link"]',
     popover: {
-      title: "📦 Inventario General",
+      title: "📦 Insumos Generales",
       description:
         "Gestiona todos tus productos desde aquí. Puedes agregar nuevos productos, editar información, actualizar precios, gestionar stock y eliminar productos. Es tu catálogo maestro.",
       side: "right",
@@ -34,7 +34,7 @@ export const tourSteps: DriveStep[] = [
   {
     element: '[data-tour="inventario-detallado-link"]',
     popover: {
-      title: "📍 Inventario Detallado",
+      title: "📍 Insumos Detallados",
       description:
         "Organiza tus productos por ubicaciones específicas (almacén, cocina, bar, etc.). Aquí puedes ver qué productos tienes en cada lugar y gestionar el stock por ubicación.",
       side: "right",
@@ -95,7 +95,7 @@ export const tourSteps: DriveStep[] = [
     popover: {
       title: "✅ ¡Tour Completado!",
       description:
-        'Ahora conoces todas las funcionalidades principales del sistema. Puedes volver a ver este tour en cualquier momento haciendo clic en el botón "Cómo usar" en la barra lateral. ¡Éxito gestionando tu inventario! 🚀',
+        'Ahora conoces todas las funcionalidades principales del sistema. Puedes volver a ver este tour en cualquier momento haciendo clic en el botón "Cómo usar" en el encabezado. ¡Éxito gestionando tu inventario! 🚀',
     },
   },
 ];

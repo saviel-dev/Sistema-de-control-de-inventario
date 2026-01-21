@@ -156,6 +156,16 @@ export interface Notificacion {
   fecha_lectura?: string;
 }
 
+export interface ExchangeRateConfigRow {
+  id: string;
+  usuario_id: string;
+  tipo_tasa: 'bcv' | 'paralelo' | 'personalizada';
+  valor_personalizado?: number | null;
+  fecha_actualizacion: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Auditoria {
   id: string;
   usuario_id?: string;
@@ -181,6 +191,7 @@ export type InsertCompra = Omit<Compra, 'id' | 'fecha_creacion' | 'fecha_actuali
 export type InsertDetalleCompra = Omit<DetalleCompra, 'id'>;
 export type InsertConfiguracion = Omit<Configuracion, 'id' | 'fecha_actualizacion'>;
 export type InsertNotificacion = Omit<Notificacion, 'id' | 'fecha_creacion'>;
+export type InsertExchangeRateConfig = Omit<ExchangeRateConfigRow, 'id' | 'created_at' | 'updated_at'>;
 export type InsertAuditoria = Omit<Auditoria, 'id' | 'fecha_accion'>;
 
 // Tipos para actualizaciones (todos los campos opcionales excepto id)
@@ -191,6 +202,7 @@ export type UpdateInventarioDetallado = Partial<Omit<InventarioDetallado, 'id' |
 export type UpdateProveedor = Partial<Omit<Proveedor, 'id' | 'fecha_creacion'>>;
 export type UpdateCompra = Partial<Omit<Compra, 'id' | 'fecha_creacion'>>;
 export type UpdateConfiguracion = Partial<Omit<Configuracion, 'id'>>;
+export type UpdateExchangeRateConfig = Partial<Omit<ExchangeRateConfigRow, 'id' | 'created_at'>>;
 
 // Tipo para la base de datos completa
 export interface Database {
@@ -250,6 +262,11 @@ export interface Database {
         Row: Notificacion;
         Insert: InsertNotificacion;
         Update: Partial<Notificacion>;
+      };
+      exchange_rate_config: {
+        Row: ExchangeRateConfigRow;
+        Insert: InsertExchangeRateConfig;
+        Update: UpdateExchangeRateConfig;
       };
       auditoria: {
         Row: Auditoria;

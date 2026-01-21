@@ -8,7 +8,7 @@ import type {
 } from '@/types/realtime.types';
 
 // Flag para habilitar/deshabilitar logs de debug
-const DEBUG = import.meta.env.VITE_REALTIME_DEBUG === 'true';
+const DEBUG = false; // Logs deshabilitados
 
 /**
  * Logger condicional para debugging de Realtime
@@ -35,7 +35,7 @@ export function createRealtimeSubscription<T extends TableName>(
 
   // Crear nombre único para el channel
   const channelName = `${table}-changes-${Date.now()}`;
-  
+
   realtimeLogger.log(`Creating subscription for table: ${table}, event: ${event}`);
 
   // Crear channel
@@ -43,15 +43,15 @@ export function createRealtimeSubscription<T extends TableName>(
 
   // Configurar listener de cambios de postgres
   const filterString = filter ? `${filter}` : undefined;
-  
+
   channel.on(
-    'postgres_changes',
+    'postgres_changes' as const,
     {
       event,
       schema,
       table,
       filter: filterString,
-    },
+    } as any,
     (payload: any) => {
       realtimeLogger.log(`Received ${payload.eventType} event for ${table}:`, payload);
 
@@ -80,7 +80,7 @@ export function createRealtimeSubscription<T extends TableName>(
   // Suscribir y manejar estados
   channel.subscribe((status) => {
     realtimeLogger.log(`Subscription status for ${table}: ${status}`);
-    
+
     if (status === 'CHANNEL_ERROR') {
       const error = new Error(`Channel error for table ${table}`);
       realtimeLogger.error(error);
@@ -220,7 +220,7 @@ export function setupReconnectionHandler(
     }
 
     const delay = exponentialBackoff ? retryDelay * Math.pow(2, retries) : retryDelay;
-    
+
     realtimeLogger.log(`Attempting reconnection in ${delay}ms (retry ${retries + 1}/${maxRetries})`);
 
     reconnectTimeout = setTimeout(() => {
